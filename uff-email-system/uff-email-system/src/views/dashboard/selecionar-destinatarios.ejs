@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <%- include('../partials/nav') %>
+
+  <main class="container">
+    <h1>Selecionar destinatários</h1>
+
+    <form method="POST" action="/emails/selecionar" class="form">
+      <label class="checkbox-linha">
+        <input type="checkbox" id="selecionar-todos">
+        <b>Selecionar todos</b>
+      </label>
+
+      <hr>
+
+      <% pessoas.forEach(p => { %>
+        <label class="checkbox-linha">
+          <input type="checkbox" name="destinatarios" value="<%= p.id %>" class="checkbox-pessoa">
+          <%= p.name %> — <small><%= p.email %></small>
+        </label>
+      <% }) %>
+
+      <% if (pessoas.length === 0) { %>
+        <p>Nenhuma pessoa com e-mail verificado ainda.</p>
+      <% } %>
+
+      <button type="submit">Continuar</button>
+    </form>
+  </main>
+
+  <script>
+    const master = document.getElementById('selecionar-todos');
+    const checkboxes = document.querySelectorAll('.checkbox-pessoa');
+    master?.addEventListener('change', () => {
+      checkboxes.forEach(cb => { cb.checked = master.checked; });
+    });
+  </script>
+</body>
+</html>

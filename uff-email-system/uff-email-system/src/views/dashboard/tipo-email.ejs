@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <%- include('../partials/nav') %>
+
+  <main class="container">
+    <h1>Que tipo de e-mail você quer enviar?</h1>
+
+    <div class="opcoes-tipo">
+      <div class="opcao-card">
+        <h2>📄 E-mail programado</h2>
+        <p>Use um modelo já pronto, com linguagem profissional.</p>
+        <% if (templates.length === 0) { %>
+          <p><em>Nenhum modelo cadastrado ainda.</em></p>
+        <% } %>
+        <ul>
+          <% templates.forEach(t => { %>
+            <li>
+              <%= t.title %>
+              — <a href="/emails/compor?ids=<%= ids.join(',') %>&template=<%= t.id %>">Usar esse modelo</a>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="opcao-card">
+        <h2>✍️ E-mail personalizado</h2>
+        <p>Escreva um e-mail humanizado do zero para esses destinatários.</p>
+        <a href="/emails/compor?ids=<%= ids.join(',') %>" class="btn-link">Escrever e-mail</a>
+      </div>
+    </div>
+
+    <hr>
+
+    <details>
+      <summary>+ Criar novo modelo de e-mail programado</summary>
+      <form method="POST" action="/emails/templates" class="form">
+        <label for="title">Nome do modelo</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="subject">Assunto</label>
+        <input type="text" id="subject" name="subject" required>
+
+        <label for="body">Corpo do e-mail</label>
+        <textarea id="body" name="body" rows="6" required></textarea>
+
+        <button type="submit">Salvar modelo</button>
+      </form>
+    </details>
+  </main>
+</body>
+</html>
