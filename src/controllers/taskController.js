@@ -240,7 +240,7 @@ async function resolverAprovacao(req, res) {
     const task = await taskModel.findById(id);
     if (!task) return res.redirect('/tarefas/aprovacao');
 
-    const criador = await userModel.findById(task.created_by);
+    const criador = task.created_by ? await userModel.findById(task.created_by) : null;
     const atualizada = await taskModel.resolveApproval(id, {
       status: decisao,
       approvedBy: req.user.id,

@@ -44,7 +44,7 @@ create table if not exists access_requests (
   status text not null default 'pending' check (status in ('pending', 'approved', 'denied')),
   requested_at timestamptz not null default now(),
   resolved_at timestamptz,
-  resolved_by uuid references users(id)
+  resolved_by uuid references users(id) on delete set null
 );
 
 -- ---------------------------------------------------------
@@ -55,7 +55,7 @@ create table if not exists email_templates (
   title text not null,
   subject text not null,
   body text not null,
-  created_by uuid references users(id),
+  created_by uuid references users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
@@ -64,7 +64,7 @@ create table if not exists email_templates (
 -- ---------------------------------------------------------
 create table if not exists email_logs (
   id uuid primary key default gen_random_uuid(),
-  sender_id uuid references users(id),
+  sender_id uuid references users(id) on delete set null,
   subject text not null,
   body text not null,
   recipients jsonb not null,
@@ -89,7 +89,7 @@ create table if not exists tasks (
   title text not null,
   description text,
   responsible_person_id uuid not null references people(id) on delete cascade,
-  created_by uuid not null references users(id),
+  created_by uuid references users(id) on delete set null,
   status text not null default 'pending'
     check (status in ('aguardando_aprovacao', 'pending', 'completed', 'denied')),
   deadline_date date not null,
@@ -106,7 +106,7 @@ create table if not exists tasks (
   reminder_sent_at timestamptz,
 
   -- aprovação do líder (só quando quem cria não é líder)
-  approved_by uuid references users(id),
+  approved_by uuid references users(id) on delete set null,
   resolved_at timestamptz,
 
   completed_at timestamptz,
