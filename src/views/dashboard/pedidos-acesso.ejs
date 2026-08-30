@@ -8,64 +8,76 @@
     <div class="app-main">
       <%- include('../partials/app-topbar', { pageTitle: 'Pedidos pendentes' }) %>
 
-      <div class="app-content">
-        <h2>Pedidos de acesso ao sistema</h2>
-        <% if (pedidosAcesso.length === 0) { %>
-          <p>Nenhum pedido de acesso pendente.</p>
-        <% } %>
-        <ul class="lista-pedidos">
-          <% pedidosAcesso.forEach(pedido => { %>
-            <li class="card-pedido">
-              <div>
-                <strong><%= pedido.people.name %></strong>
-                <span class="badge <%= pedido.people.verified ? 'badge-sucesso' : 'badge-pendente' %>" style="margin-left: 8px;">
-                  <%= pedido.people.verified ? 'e-mail verificado' : 'e-mail não verificado' %>
-                </span><br>
-                <span class="stat-mono"><%= pedido.people.email %></span><br>
-                <small>Pedido em <%= new Date(pedido.requested_at).toLocaleString('pt-BR') %></small>
-              </div>
-              <div class="acoes-pedido">
-                <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
-                  <input type="hidden" name="decisao" value="approved">
-                  <button type="submit" class="btn-sim">Aprovar</button>
-                </form>
-                <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
-                  <input type="hidden" name="decisao" value="denied">
-                  <button type="submit" class="btn-nao">Negar</button>
-                </form>
-              </div>
-            </li>
-          <% }) %>
-        </ul>
+      <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
+        <div class="card">
+          <h2 style="margin-top:0;">Pedidos de acesso ao sistema</h2>
+          <% if (pedidosAcesso.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhum pedido de acesso pendente</h3>
+              <p>Quando alguém se cadastrar, o pedido de acesso aparece aqui automaticamente pra você avaliar.</p>
+            </div>
+          <% } else { %>
+            <ul class="lista-pedidos">
+              <% pedidosAcesso.forEach(pedido => { %>
+                <li class="card-pedido">
+                  <div>
+                    <strong><%= pedido.people.name %></strong>
+                    <span class="badge <%= pedido.people.verified ? 'badge-sucesso' : 'badge-pendente' %>" style="margin-left: 8px;">
+                      <%= pedido.people.verified ? 'e-mail verificado' : 'e-mail não verificado' %>
+                    </span><br>
+                    <span class="stat-mono"><%= pedido.people.email %></span><br>
+                    <small>Pedido em <%= new Date(pedido.requested_at).toLocaleString('pt-BR') %></small>
+                  </div>
+                  <div class="acoes-pedido">
+                    <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
+                      <input type="hidden" name="decisao" value="approved">
+                      <button type="submit" class="btn-sim">Aprovar</button>
+                    </form>
+                    <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
+                      <input type="hidden" name="decisao" value="denied">
+                      <button type="submit" class="btn-nao">Negar</button>
+                    </form>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
 
-        <hr>
-
-        <h2>Pedidos para virar líder</h2>
-        <% if (pedidosLider.length === 0) { %>
-          <p>Nenhum pedido de promoção a líder pendente.</p>
-        <% } %>
-        <ul class="lista-pedidos">
-          <% pedidosLider.forEach(pedido => { %>
-            <li class="card-pedido">
-              <div>
-                <strong><%= pedido.people.name %></strong>
-                <span class="badge badge-lider" style="margin-left: 8px;">quer virar líder</span><br>
-                <span class="stat-mono"><%= pedido.people.email %></span><br>
-                <small>Pedido em <%= new Date(pedido.requested_at).toLocaleString('pt-BR') %></small>
-              </div>
-              <div class="acoes-pedido">
-                <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
-                  <input type="hidden" name="decisao" value="approved">
-                  <button type="submit" class="btn-sim">Aprovar</button>
-                </form>
-                <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
-                  <input type="hidden" name="decisao" value="denied">
-                  <button type="submit" class="btn-nao">Negar</button>
-                </form>
-              </div>
-            </li>
-          <% }) %>
-        </ul>
+        <div class="card">
+          <h2 style="margin-top:0;">Pedidos para virar líder</h2>
+          <% if (pedidosLider.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhum pedido de promoção pendente</h3>
+              <p>Quando um membro pedir pra virar líder, o pedido aparece aqui.</p>
+            </div>
+          <% } else { %>
+            <ul class="lista-pedidos">
+              <% pedidosLider.forEach(pedido => { %>
+                <li class="card-pedido">
+                  <div>
+                    <strong><%= pedido.people.name %></strong>
+                    <span class="badge badge-lider" style="margin-left: 8px;">quer virar líder</span><br>
+                    <span class="stat-mono"><%= pedido.people.email %></span><br>
+                    <small>Pedido em <%= new Date(pedido.requested_at).toLocaleString('pt-BR') %></small>
+                  </div>
+                  <div class="acoes-pedido">
+                    <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
+                      <input type="hidden" name="decisao" value="approved">
+                      <button type="submit" class="btn-sim">Aprovar</button>
+                    </form>
+                    <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
+                      <input type="hidden" name="decisao" value="denied">
+                      <button type="submit" class="btn-nao">Negar</button>
+                    </form>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
       </div>
     </div>
   </div>

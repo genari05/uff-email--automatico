@@ -9,14 +9,14 @@
       <%- include('../partials/app-topbar', { pageTitle: 'Selecionar destinatários' }) %>
 
       <div class="app-content">
-        <div class="card" style="max-width: 560px;">
+        <div class="card" style="max-width: 760px;">
           <form method="POST" action="/emails/selecionar" class="form" style="max-width: none;">
             <label class="checkbox-linha" style="background: var(--color-surface-muted); font-weight: 600;">
               <input type="checkbox" id="selecionar-todos">
               Selecionar todos
             </label>
 
-            <div style="margin-top: 12px;">
+            <div class="checkbox-grid" style="margin-top: 12px;">
               <% pessoas.forEach(p => { %>
                 <label class="checkbox-linha">
                   <input type="checkbox" name="destinatarios" value="<%= p.id %>" class="checkbox-pessoa">
@@ -26,7 +26,11 @@
             </div>
 
             <% if (pessoas.length === 0) { %>
-              <p>Nenhuma pessoa com e-mail verificado ainda.</p>
+              <div class="empty-state">
+                <div class="empty-state-icon">Ψ</div>
+                <h3>Nenhum destinatário disponível</h3>
+                <p>Assim que alguém confirmar o e-mail, essa pessoa aparece aqui pra receber comunicados.</p>
+              </div>
             <% } %>
 
             <button type="submit">Continuar</button>

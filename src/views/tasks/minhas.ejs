@@ -11,7 +11,11 @@
       <div class="app-content">
         <% if (tarefas.length === 0) { %>
           <div class="card">
-            <p>Você não tem nenhuma tarefa no momento. 🎉</p>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma tarefa por aqui</h3>
+              <p>Quando alguém te atribuir uma tarefa, ela aparece nesta tela e você pode acompanhar o prazo e marcar como concluída.</p>
+            </div>
           </div>
         <% } %>
 

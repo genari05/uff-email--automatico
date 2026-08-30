@@ -503,6 +503,9 @@ button:hover, .btn-primary:hover {
 .app-main {
   flex: 1;
   min-width: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Ctext x='10' y='70' font-family='Georgia,serif' font-size='46' fill='%231B4FE0' opacity='0.04' transform='rotate(-14 10 70)'%3E%CE%A8%3C/text%3E%3Ctext x='150' y='170' font-family='Georgia,serif' font-size='34' fill='%230A1F44' opacity='0.035' transform='rotate(10 150 170)'%3E%CE%A8%3C/text%3E%3Ctext x='60' y='235' font-family='Georgia,serif' font-size='24' fill='%2335C4E8' opacity='0.05' transform='rotate(-6 60 235)'%3E%CE%A8%3C/text%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
 .app-topbar {
@@ -519,7 +522,8 @@ button:hover, .btn-primary:hover {
 
 .app-content {
   padding: 32px;
-  max-width: 960px;
+  max-width: 1180px;
+  margin: 0 auto;
 }
 
 /* Menu mobile (sidebar vira barra superior colapsável) */
@@ -673,7 +677,67 @@ details {
 details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
 details .form { margin-top: 16px; }
 
-/* Estatística no estilo "console" (mono) */
+/* =========================================================
+   ESTADO VAZIO — usa o símbolo Ψ em destaque ao invés de
+   deixar a tela com uma frase solta e sensação de "vazio"
+   ========================================================= */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.empty-state-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, 'Times New Roman', 'Liberation Serif', serif;
+  font-weight: 700;
+  font-size: 34px;
+  margin-bottom: 16px;
+  box-shadow: 0 0 0 6px var(--color-surface-muted);
+}
+
+.empty-state h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 13.5px;
+  max-width: 320px;
+}
+
+/* Grade de 2 colunas em telas largas, pra listas de checkbox
+   não ficarem esticadas numa coluna só */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 700px) {
+  .checkbox-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Painel de tarefas: tabela principal + mural lateral */
+.tarefas-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 980px) {
+  .tarefas-grid { grid-template-columns: 2fr 1.1fr; }
+}
 .stat-mono {
   font-family: var(--font-mono);
   font-size: 13px;

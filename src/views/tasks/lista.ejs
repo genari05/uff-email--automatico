@@ -8,59 +8,68 @@
     <div class="app-main">
       <%- include('../partials/app-topbar', { pageTitle: 'Painel de tarefas' }) %>
 
-      <div class="app-content" style="display:grid; grid-template-columns: 1fr; gap: 20px;">
+      <div class="app-content tarefas-grid">
         <div class="card">
           <h2 style="margin-top:0;">Todas as tarefas</h2>
 
           <% if (tarefas.length === 0) { %>
-            <p>Nenhuma tarefa cadastrada ainda.</p>
-          <% } %>
-
-          <div class="table-wrapper">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Tarefa</th>
-                  <th>Responsável</th>
-                  <th>Prazo</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% tarefas.forEach(t => { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma tarefa cadastrada ainda</h3>
+              <p>Assim que alguém criar uma tarefa, ela aparece aqui com o responsável, prazo e status de todos.</p>
+            </div>
+          <% } else { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
                   <tr>
-                    <td data-label="Tarefa"><%= t.title %></td>
-                    <td data-label="Responsável"><%= t.people.name %></td>
-                    <td data-label="Prazo"><%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></td>
-                    <td data-label="Status">
-                      <% if (t.status === 'completed') { %>
-                        <span class="badge badge-sucesso">Concluída</span>
-                      <% } else if (t.status === 'denied') { %>
-                        <span class="badge badge-negado">Negada</span>
-                      <% } else { %>
-                        <span class="badge badge-pendente">Pendente</span>
-                      <% } %>
-                    </td>
+                    <th>Tarefa</th>
+                    <th>Responsável</th>
+                    <th>Prazo</th>
+                    <th>Status</th>
                   </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  <% tarefas.forEach(t => { %>
+                    <tr>
+                      <td data-label="Tarefa"><%= t.title %></td>
+                      <td data-label="Responsável"><%= t.people.name %></td>
+                      <td data-label="Prazo"><%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></td>
+                      <td data-label="Status">
+                        <% if (t.status === 'completed') { %>
+                          <span class="badge badge-sucesso">Concluída</span>
+                        <% } else if (t.status === 'denied') { %>
+                          <span class="badge badge-negado">Negada</span>
+                        <% } else { %>
+                          <span class="badge badge-pendente">Pendente</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
         </div>
 
         <div class="card">
           <h2 style="margin-top:0;">Mural de atividades</h2>
           <% if (atividades.length === 0) { %>
-            <p>Nenhuma atividade registrada ainda.</p>
+            <div class="empty-state" style="padding: 32px 16px;">
+              <div class="empty-state-icon" style="width:52px; height:52px; font-size:26px;">Ψ</div>
+              <h3 style="font-size:14px;">Nada por aqui ainda</h3>
+              <p>Conclusões, novas tarefas e lembretes enviados vão aparecer aqui em tempo real.</p>
+            </div>
+          <% } else { %>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
+              <% atividades.forEach(a => { %>
+                <li style="padding:10px 12px; border:1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px;">
+                  <%= a.message %>
+                  <br><small style="color: var(--color-text-muted);"><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
+                </li>
+              <% }) %>
+            </ul>
           <% } %>
-          <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
-            <% atividades.forEach(a => { %>
-              <li style="padding:10px 12px; border:1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px;">
-                <%= a.message %>
-                <br><small style="color: var(--color-text-muted);"><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
-              </li>
-            <% }) %>
-          </ul>
         </div>
       </div>
     </div>

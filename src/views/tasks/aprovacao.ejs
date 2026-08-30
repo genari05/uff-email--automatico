@@ -11,7 +11,11 @@
       <div class="app-content">
         <% if (tarefas.length === 0) { %>
           <div class="card">
-            <p>Nenhuma tarefa aguardando aprovação. 🎉</p>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma tarefa aguardando aprovação</h3>
+              <p>Quando um membro atribuir uma tarefa pra alguém, ela aparece aqui até você decidir.</p>
+            </div>
           </div>
         <% } %>
 
