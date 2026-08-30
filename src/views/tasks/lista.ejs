@@ -27,6 +27,7 @@
                     <th>Responsável</th>
                     <th>Prazo</th>
                     <th>Status</th>
+                    <% if (currentUser.role === 'leader') { %><th></th><% } %>
                   </tr>
                 </thead>
                 <tbody>
@@ -44,6 +45,13 @@
                           <span class="badge badge-pendente">Pendente</span>
                         <% } %>
                       </td>
+                      <% if (currentUser.role === 'leader') { %>
+                        <td data-label="">
+                          <form method="POST" action="/tarefas/<%= t.id %>/excluir" class="form-excluir-tarefa">
+                            <button type="submit" class="btn-nao" style="padding:6px 12px; font-size:12.5px;">Excluir</button>
+                          </form>
+                        </td>
+                      <% } %>
                     </tr>
                   <% }) %>
                 </tbody>
@@ -74,5 +82,15 @@
       </div>
     </div>
   </div>
+
+  <script>
+    document.querySelectorAll('.form-excluir-tarefa').forEach((form) => {
+      form.addEventListener('submit', (e) => {
+        if (!confirm('Tem certeza que quer excluir essa tarefa? Essa ação não pode ser desfeita.')) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

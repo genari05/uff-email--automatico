@@ -9,6 +9,7 @@ router.use(requireAuth); // tudo aqui exige login com acesso liberado
 router.get('/', taskController.listarTarefas);
 router.get('/minhas', taskController.minhasTarefas);
 router.post('/:id/concluir', taskController.concluirTarefa);
+router.post('/:id/excluir', requireLeader, taskController.excluirTarefa);
 
 router.get('/nova', taskController.formNovaTarefa);
 router.post('/', taskController.criarTarefa);

@@ -303,6 +303,26 @@ async function desempenho(req, res) {
   res.render('tasks/desempenho', { title: 'Desempenho da equipe', resumo, porPessoa });
 }
 
+// POST /tarefas/:id/excluir -> só o líder pode excluir
+async function excluirTarefa(req, res) {
+  try {
+    const { id } = req.params;
+    const task = await taskModel.findById(id);
+    if (!task) return res.redirect('/tarefas');
+
+    await taskModel.remove(id);
+    await activityModel.log(
+      `${req.user.people.name} excluiu a tarefa "${task.title}" (era de ${task.people.name})`,
+      'task_deleted'
+    );
+
+    res.redirect('/tarefas');
+  } catch (err) {
+    console.error(err);
+    res.redirect('/tarefas');
+  }
+}
+
 module.exports = {
   formNovaTarefa,
   criarTarefa,
@@ -312,4 +332,5 @@ module.exports = {
   listarAprovacao,
   resolverAprovacao,
   desempenho,
+  excluirTarefa,
 };

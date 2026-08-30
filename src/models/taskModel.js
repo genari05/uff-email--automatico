@@ -119,6 +119,11 @@ async function listAllForStats() {
   return data;
 }
 
+async function remove(id) {
+  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  if (error) throw error;
+}
+
 module.exports = {
   create,
   findById,
@@ -130,4 +135,5 @@ module.exports = {
   markCompleted,
   resolveApproval,
   listAllForStats,
+  remove,
 };
