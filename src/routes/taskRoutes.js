@@ -14,6 +14,9 @@ router.post('/:id/excluir', requireLeader, taskController.excluirTarefa);
 router.get('/nova', taskController.formNovaTarefa);
 router.post('/', taskController.criarTarefa);
 
+router.get('/lembretes', taskController.statusLembretes);
+router.post('/lembretes/verificar-agora', taskController.forcarVerificacao);
+
 // Só o líder aprova/nega tarefas atribuídas por membros
 router.get('/aprovacao', requireLeader, taskController.listarAprovacao);
 router.post('/:id/aprovar', requireLeader, taskController.resolverAprovacao);

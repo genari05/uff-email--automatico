@@ -119,6 +119,21 @@ async function listAllForStats() {
   return data;
 }
 
+/**
+ * Todas as tarefas que têm lembrete configurado (enviado ou não),
+ * para a tela de controle de status de e-mails.
+ */
+async function listWithReminder() {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*, people:responsible_person_id(*)')
+    .eq('send_reminder', true)
+    .in('status', ['pending', 'completed'])
+    .order('reminder_date', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
 async function remove(id) {
   const { error } = await supabase.from(TABLE).delete().eq('id', id);
   if (error) throw error;
@@ -136,4 +151,5 @@ module.exports = {
   resolveApproval,
   listAllForStats,
   remove,
+  listWithReminder,
 };

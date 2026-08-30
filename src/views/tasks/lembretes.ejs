@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Status de e-mails' }) %>
+
+      <div class="app-content" style="display:flex; flex-direction:column; gap:20px;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h2 style="margin-top:0; margin-bottom: 4px;">Controle de lembretes</h2>
+              <p style="margin:0;">Confira se cada lembrete programado já foi enviado, ainda vai disparar, ou ficou atrasado.</p>
+            </div>
+            <form method="POST" action="/tarefas/lembretes/verificar-agora">
+              <button type="submit" class="btn-secundario">Verificar agora</button>
+            </form>
+          </div>
+
+          <% if (resultado) { %>
+            <% if (resultado === 'erro') { %>
+              <p class="alerta alerta-erro" style="margin-top:16px;">Erro ao verificar lembretes. Confira o terminal do servidor.</p>
+            <% } else { %>
+              <%
+                const partes = Object.fromEntries(resultado.split('|').map(p => p.split(':')));
+              %>
+              <p class="alerta alerta-sucesso" style="margin-top:16px;">
+                Verificação feita agora: <b><%= partes.enviados %></b> e-mail(s) enviado(s),
+                <b><%= partes.aguardando %></b> ainda aguardando a hora certa,
+                <b><%= partes.erros %></b> erro(s).
+              </p>
+            <% } %>
+          <% } %>
+
+          <p style="font-size:13px; color:var(--color-text-muted); margin-top:16px;">
+            O sistema confere sozinho a cada 10 minutos enquanto o servidor está ligado. Se o servidor
+            estiver "dormindo" no momento certo (comum em planos gratuitos), o lembrete só sai quando
+            alguém acessar o site de novo ou usar o botão "Verificar agora" acima.
+          </p>
+        </div>
+
+        <div class="card">
+          <% if (tarefas.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhum lembrete configurado ainda</h3>
+              <p>Ao criar uma tarefa, marque a opção de lembrete por e-mail pra ela aparecer aqui.</p>
+            </div>
+          <% } else { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Tarefa</th>
+                    <th>Responsável</th>
+                    <th>Programado para</th>
+                    <th>Situação</th>
+                    <th>Enviado em</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% tarefas.forEach(t => { %>
+                    <tr>
+                      <td data-label="Tarefa"><%= t.title %></td>
+                      <td data-label="Responsável"><%= t.people.name %></td>
+                      <td data-label="Programado para">
+                        <%= new Date(t.reminder_date).toLocaleDateString('pt-BR') %><% if (t.reminder_time) { %> às <%= t.reminder_time %><% } else { %> (00:00)<% } %>
+                      </td>
+                      <td data-label="Situação">
+                        <% if (t.situacao === 'enviado') { %>
+                          <span class="badge badge-sucesso">Enviado</span>
+                        <% } else if (t.situacao === 'atrasado') { %>
+                          <span class="badge badge-negado">Atrasado</span>
+                        <% } else { %>
+                          <span class="badge badge-pendente">Agendado</span>
+                        <% } %>
+                      </td>
+                      <td data-label="Enviado em">
+                        <% if (t.reminder_sent_at) { %>
+                          <%= new Date(t.reminder_sent_at).toLocaleString('pt-BR') %>
+                        <% } else { %>
+                          <span style="color:var(--color-text-muted);">—</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

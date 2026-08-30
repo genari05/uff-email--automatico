@@ -3,6 +3,7 @@ const activityModel = require('../models/activityModel');
 const personModel = require('../models/personModel');
 const userModel = require('../models/userModel');
 const emailModel = require('../models/emailModel');
+const { verificarLembretes } = require('../services/reminderService');
 const {
   sendTaskAssignedEmail,
   sendTaskAwaitingApprovalEmail,
@@ -322,6 +323,42 @@ async function excluirTarefa(req, res) {
   }
 }
 
+// GET /tarefas/lembretes -> controle de status de envio dos lembretes
+async function statusLembretes(req, res) {
+  const tarefas = await taskModel.listWithReminder();
+  const agora = new Date();
+
+  const comStatus = tarefas.map((t) => {
+    const horario = t.reminder_time && /^\d{2}:\d{2}$/.test(t.reminder_time) ? t.reminder_time : '00:00';
+    const momento = new Date(`${t.reminder_date}T${horario}:00`);
+
+    let situacao;
+    if (t.reminder_sent) situacao = 'enviado';
+    else if (momento <= agora) situacao = 'atrasado'; // já passou da hora e ainda não foi (servidor deve ter ficado offline no momento)
+    else situacao = 'agendado';
+
+    return { ...t, situacao, momento };
+  });
+
+  res.render('tasks/lembretes', {
+    title: 'Status de e-mails',
+    tarefas: comStatus,
+    resultado: req.query.resultado || null,
+  });
+}
+
+// POST /tarefas/lembretes/verificar-agora -> força a checagem na hora, sem esperar o relógio
+async function forcarVerificacao(req, res) {
+  try {
+    const resultado = await verificarLembretes();
+    const resumo = `enviados:${resultado.enviados}|aguardando:${resultado.aindaNaoChegouAHora}|erros:${resultado.erros.length}`;
+    res.redirect(`/tarefas/lembretes?resultado=${encodeURIComponent(resumo)}`);
+  } catch (err) {
+    console.error(err);
+    res.redirect('/tarefas/lembretes?resultado=erro');
+  }
+}
+
 module.exports = {
   formNovaTarefa,
   criarTarefa,
@@ -332,4 +369,6 @@ module.exports = {
   resolverAprovacao,
   desempenho,
   excluirTarefa,
+  statusLembretes,
+  forcarVerificacao,
 };
