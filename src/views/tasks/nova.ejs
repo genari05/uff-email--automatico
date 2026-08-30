@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Nova tarefa' }) %>
+
+      <div class="app-content">
+        <div class="card" style="max-width: 640px;">
+          <% if (currentUser.role !== 'leader') { %>
+            <p class="alerta">Como você não é líder, essa tarefa vai ficar <b>aguardando aprovação</b> antes de valer pra pessoa responsável.</p>
+          <% } %>
+          <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+
+          <form method="POST" action="/tarefas" class="form" style="max-width: none;">
+            <label for="responsibleId">Responsável</label>
+            <select id="responsibleId" name="responsibleId" required>
+              <option value="">Selecione a pessoa</option>
+              <% pessoas.forEach(p => { %>
+                <option value="<%= p.id %>"><%= p.name %> — <%= p.email %></option>
+              <% }) %>
+            </select>
+
+            <label for="title">Título da tarefa</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="description">Descrição (opcional)</label>
+            <textarea id="description" name="description" rows="4"></textarea>
+
+            <label for="deadlineDate">Prazo de entrega</label>
+            <input type="date" id="deadlineDate" name="deadlineDate" required>
+
+            <hr>
+
+            <label class="checkbox-linha">
+              <input type="checkbox" id="sendReminder" name="sendReminder">
+              Enviar um lembrete por e-mail automaticamente (opcional)
+            </label>
+
+            <div id="camposLembrete" style="display:none; margin-top: 12px;">
+              <label for="reminderDate">Data do lembrete</label>
+              <input type="date" id="reminderDate" name="reminderDate">
+
+              <label for="reminderType">Tipo de e-mail do lembrete</label>
+              <select id="reminderType" name="reminderType">
+                <option value="custom">Escrever um e-mail personalizado</option>
+                <option value="template">Usar um modelo pronto</option>
+              </select>
+
+              <div id="campoTemplate" style="display:none;">
+                <label for="reminderTemplateId">Modelo</label>
+                <select id="reminderTemplateId" name="reminderTemplateId">
+                  <option value="">Selecione um modelo</option>
+                  <% templates.forEach(t => { %>
+                    <option value="<%= t.id %>"><%= t.title %></option>
+                  <% }) %>
+                </select>
+                <% if (templates.length === 0) { %>
+                  <p style="font-size: 13px; color: var(--color-text-muted);">Nenhum modelo cadastrado ainda — crie um na tela de Enviar e-mail.</p>
+                <% } %>
+              </div>
+
+              <div id="campoCustom">
+                <label for="reminderSubject">Assunto do lembrete</label>
+                <input type="text" id="reminderSubject" name="reminderSubject">
+
+                <label for="reminderBody">Mensagem do lembrete</label>
+                <textarea id="reminderBody" name="reminderBody" rows="5"></textarea>
+              </div>
+            </div>
+
+            <button type="submit" style="margin-top: 16px;">Criar tarefa</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const checkboxLembrete = document.getElementById('sendReminder');
+    const camposLembrete = document.getElementById('camposLembrete');
+    const tipoLembrete = document.getElementById('reminderType');
+    const campoTemplate = document.getElementById('campoTemplate');
+    const campoCustom = document.getElementById('campoCustom');
+
+    checkboxLembrete.addEventListener('change', () => {
+      camposLembrete.style.display = checkboxLembrete.checked ? 'block' : 'none';
+    });
+
+    function atualizarTipoLembrete() {
+      if (tipoLembrete.value === 'template') {
+        campoTemplate.style.display = 'block';
+        campoCustom.style.display = 'none';
+      } else {
+        campoTemplate.style.display = 'none';
+        campoCustom.style.display = 'block';
+      }
+    }
+    tipoLembrete.addEventListener('change', atualizarTipoLembrete);
+    atualizarTipoLembrete();
+  </script>
+</body>
+</html>

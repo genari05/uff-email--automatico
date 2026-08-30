@@ -126,6 +126,77 @@ async function sendNewLeaderRequestEmail({ to, requesterName }) {
 }
 
 /**
+ * Avisa a pessoa responsável que recebeu uma nova tarefa.
+ */
+async function sendTaskAssignedEmail({ to, name, title, description, deadlineDate }) {
+  return sendMail({
+    to,
+    subject: `Nova tarefa: ${title}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Olá, ${name}!</h2>
+        <p>Você recebeu uma nova tarefa no sistema UFF:</p>
+        <p style="padding:12px; background:#f4f6f8; border-radius:6px;">
+          <b>${title}</b><br>
+          ${description ? description.replace(/\n/g, '<br>') + '<br>' : ''}
+          Prazo de entrega: <b>${deadlineDate}</b>
+        </p>
+        <p>Acesse o sistema e vá em "Minhas tarefas" para acompanhar.</p>
+      </div>
+    `,
+  });
+}
+
+/**
+ * Lembrete automático da tarefa, na data configurada por quem criou.
+ * Pode usar assunto/corpo customizado (subject/html já prontos).
+ */
+async function sendTaskReminderEmail({ to, subject, html }) {
+  return sendMail({ to, subject, html });
+}
+
+/**
+ * Avisa o(s) líder(es) que um membro quer atribuir uma tarefa e
+ * está aguardando aprovação.
+ */
+async function sendTaskAwaitingApprovalEmail({ to, creatorName, responsibleName, title }) {
+  const link = `${env.appUrl}/tarefas/aprovacao`;
+  return sendMail({
+    to,
+    subject: 'Tarefa aguardando aprovação - Sistema UFF',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Nova tarefa para aprovar</h2>
+        <p><b>${creatorName}</b> quer atribuir a tarefa "<b>${title}</b>" para <b>${responsibleName}</b>.</p>
+        <p>
+          <a href="${link}"
+             style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
+                    text-decoration:none;border-radius:6px;">
+            Avaliar pedido
+          </a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+/**
+ * Avisa quem criou a tarefa que ela foi negada pelo líder.
+ */
+async function sendTaskDeniedEmail({ to, creatorName, responsibleName, title }) {
+  return sendMail({
+    to,
+    subject: 'Tarefa negada - Sistema UFF',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Olá, ${creatorName}</h2>
+        <p>A tarefa "<b>${title}</b>" que você tentou atribuir para <b>${responsibleName}</b> não foi aprovada pelo líder.</p>
+      </div>
+    `,
+  });
+}
+
+/**
  * Envio em massa (template "programado" ou personalizado) para
  * a lista de destinatários selecionada pelo usuário autorizado.
  */
@@ -146,5 +217,9 @@ module.exports = {
   sendAccessApprovedEmail,
   sendNewAccessRequestEmail,
   sendNewLeaderRequestEmail,
+  sendTaskAssignedEmail,
+  sendTaskReminderEmail,
+  sendTaskAwaitingApprovalEmail,
+  sendTaskDeniedEmail,
   sendBulkEmail,
 };

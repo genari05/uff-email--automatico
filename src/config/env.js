@@ -13,6 +13,7 @@ module.exports = {
   appUrl: process.env.APP_URL || 'http://localhost:3000',
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: required('JWT_SECRET'),
+  cronSecret: required('CRON_SECRET'),
 
   supabase: {
     url: required('SUPABASE_URL'),

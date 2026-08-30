@@ -14,10 +14,30 @@
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 5.5 10 11l7.5-5.5"/><rect x="2.5" y="4" width="15" height="12" rx="1.6"/></svg>
         Enviar e-mail
       </a>
+      <a href="/tarefas/minhas" class="<%= currentPath === '/tarefas/minhas' ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M6.5 10.2l2.2 2.2 4.8-4.8"/></svg>
+        Minhas tarefas
+      </a>
+      <a href="/tarefas" class="<%= currentPath === '/tarefas' ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h14M3 10h14M3 15h9"/></svg>
+        Painel de tarefas
+      </a>
+      <a href="/tarefas/nova" class="<%= currentPath === '/tarefas/nova' ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 4v12M4 10h12"/></svg>
+        Nova tarefa
+      </a>
       <% if (currentUser.role === 'leader') { %>
         <a href="/acesso/pendentes" class="<%= currentPath === '/acesso/pendentes' ? 'ativo' : '' %>">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="13" rx="1.6"/><path d="M2.5 8.5h15"/><path d="M6 12.2l2 2 4-4"/></svg>
           Pedidos pendentes
+        </a>
+        <a href="/tarefas/aprovacao" class="<%= currentPath === '/tarefas/aprovacao' ? 'ativo' : '' %>">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10.5l3.5 3.5L16 5.5"/></svg>
+          Aprovar tarefas
+        </a>
+        <a href="/tarefas/desempenho" class="<%= currentPath === '/tarefas/desempenho' ? 'ativo' : '' %>">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17V9M8.5 17V4M14 17v-6M17 17H3"/></svg>
+          Desempenho da equipe
         </a>
       <% } else { %>
         <a href="/acesso/virar-lider" class="<%= currentPath === '/acesso/virar-lider' ? 'ativo' : '' %>">

@@ -246,6 +246,7 @@ button:hover, .btn-primary:hover { background: var(--color-primary-hover); }
 .badge-sucesso { background: var(--color-success-bg); border-color: #B7E3CD; color: var(--color-success); }
 .badge-pendente { background: var(--color-warning-bg); border-color: #F0DBA8; color: var(--color-warning); }
 .badge-lider { background: var(--color-primary-soft); border-color: #C4D6FA; color: var(--color-primary); }
+.badge-negado { background: var(--color-danger-bg); border-color: #F1C1C8; color: var(--color-danger); }
 
 /* =========================================================
    CARDS

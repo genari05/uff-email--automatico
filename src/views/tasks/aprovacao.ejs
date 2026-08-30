@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Aprovar tarefas' }) %>
+
+      <div class="app-content">
+        <% if (tarefas.length === 0) { %>
+          <div class="card">
+            <p>Nenhuma tarefa aguardando aprovação. 🎉</p>
+          </div>
+        <% } %>
+
+        <ul class="lista-pedidos">
+          <% tarefas.forEach(t => { %>
+            <li class="card-pedido">
+              <div>
+                <strong><%= t.title %></strong><br>
+                <span>Para: <%= t.people.name %> (<%= t.people.email %>)</span><br>
+                <% if (t.description) { %><span><%= t.description %></span><br><% } %>
+                <small>Prazo: <%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></small>
+              </div>
+              <div class="acoes-pedido">
+                <form method="POST" action="/tarefas/<%= t.id %>/aprovar" style="display:inline">
+                  <input type="hidden" name="decisao" value="pending">
+                  <button type="submit" class="btn-sim">Aprovar</button>
+                </form>
+                <form method="POST" action="/tarefas/<%= t.id %>/aprovar" style="display:inline">
+                  <input type="hidden" name="decisao" value="denied">
+                  <button type="submit" class="btn-nao">Negar</button>
+                </form>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

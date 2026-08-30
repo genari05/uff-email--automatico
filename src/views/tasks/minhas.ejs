@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Minhas tarefas' }) %>
+
+      <div class="app-content">
+        <% if (tarefas.length === 0) { %>
+          <div class="card">
+            <p>Você não tem nenhuma tarefa no momento. 🎉</p>
+          </div>
+        <% } %>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <% tarefas.forEach(t => { %>
+            <div class="card" style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+              <div>
+                <strong><%= t.title %></strong>
+                <span class="badge <%= t.status === 'completed' ? 'badge-sucesso' : 'badge-pendente' %>" style="margin-left:8px;">
+                  <%= t.status === 'completed' ? 'Concluída' : 'Pendente' %>
+                </span>
+                <% if (t.description) { %><p style="margin: 8px 0;"><%= t.description %></p><% } %>
+                <small style="color: var(--color-text-muted);">Prazo: <%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></small>
+              </div>
+
+              <% if (t.status !== 'completed') { %>
+                <form method="POST" action="/tarefas/<%= t.id %>/concluir">
+                  <button type="submit" class="btn-sim">Marcar como concluída</button>
+                </form>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
