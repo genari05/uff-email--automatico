@@ -31,7 +31,7 @@
             <textarea id="description" name="description" rows="4"></textarea>
 
             <label for="deadlineDate">Prazo de entrega</label>
-            <input type="date" id="deadlineDate" name="deadlineDate" required>
+            <input type="date" id="deadlineDate" name="deadlineDate" min="<%= today %>" required>
 
             <hr>
 
@@ -42,7 +42,11 @@
 
             <div id="camposLembrete" style="display:none; margin-top: 12px;">
               <label for="reminderDate">Data do lembrete</label>
-              <input type="date" id="reminderDate" name="reminderDate">
+              <input type="date" id="reminderDate" name="reminderDate" min="<%= today %>">
+
+              <label for="reminderTime">Horário do lembrete (opcional)</label>
+              <input type="time" id="reminderTime" name="reminderTime">
+              <small style="color: var(--color-text-muted);">Se deixar em branco, o lembrete é enviado à meia-noite (00:00) do dia marcado.</small>
 
               <label for="reminderType">Tipo de e-mail do lembrete</label>
               <select id="reminderType" name="reminderType">
@@ -85,9 +89,16 @@
     const tipoLembrete = document.getElementById('reminderType');
     const campoTemplate = document.getElementById('campoTemplate');
     const campoCustom = document.getElementById('campoCustom');
+    const deadlineInput = document.getElementById('deadlineDate');
+    const reminderDateInput = document.getElementById('reminderDate');
 
     checkboxLembrete.addEventListener('change', () => {
       camposLembrete.style.display = checkboxLembrete.checked ? 'block' : 'none';
+    });
+
+    // O lembrete não pode ser depois do prazo de entrega
+    deadlineInput.addEventListener('change', () => {
+      if (deadlineInput.value) reminderDateInput.max = deadlineInput.value;
     });
 
     function atualizarTipoLembrete() {

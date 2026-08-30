@@ -13,7 +13,8 @@ const {
 async function formNovaTarefa(req, res) {
   const pessoas = await personModel.listAll({ onlyVerified: true });
   const templates = await emailModel.listTemplates();
-  res.render('tasks/nova', { title: 'Nova tarefa', erro: null, pessoas, templates });
+  const today = new Date().toISOString().slice(0, 10);
+  res.render('tasks/nova', { title: 'Nova tarefa', erro: null, pessoas, templates, today });
 }
 
 // POST /tarefas
@@ -26,6 +27,7 @@ async function criarTarefa(req, res) {
       deadlineDate,
       sendReminder, // 'on' se marcado
       reminderDate,
+      reminderTime, // 'HH:MM', opcional
       reminderType, // 'template' | 'custom'
       reminderTemplateId,
       reminderSubject,
@@ -34,6 +36,7 @@ async function criarTarefa(req, res) {
 
     const pessoas = await personModel.listAll({ onlyVerified: true });
     const templates = await emailModel.listTemplates();
+    const today = new Date().toISOString().slice(0, 10);
 
     if (!responsibleId || !title || !deadlineDate) {
       return res.render('tasks/nova', {
@@ -41,17 +44,66 @@ async function criarTarefa(req, res) {
         erro: 'Preencha responsável, título e prazo de entrega.',
         pessoas,
         templates,
+        today,
+      });
+    }
+
+    // REGRA: o prazo de entrega não pode ser uma data que já passou
+    if (deadlineDate < today) {
+      return res.render('tasks/nova', {
+        title: 'Nova tarefa',
+        erro: 'O prazo de entrega não pode ser uma data no passado.',
+        pessoas,
+        templates,
+        today,
       });
     }
 
     const querEnviarLembrete = sendReminder === 'on';
-    if (querEnviarLembrete && !reminderDate) {
-      return res.render('tasks/nova', {
-        title: 'Nova tarefa',
-        erro: 'Escolha a data do lembrete, ou desmarque o envio de e-mail.',
-        pessoas,
-        templates,
-      });
+
+    if (querEnviarLembrete) {
+      if (!reminderDate) {
+        return res.render('tasks/nova', {
+          title: 'Nova tarefa',
+          erro: 'Escolha a data do lembrete, ou desmarque o envio de e-mail.',
+          pessoas,
+          templates,
+          today,
+        });
+      }
+
+      // REGRA: o lembrete não pode ser marcado pra uma data que já passou
+      if (reminderDate < today) {
+        return res.render('tasks/nova', {
+          title: 'Nova tarefa',
+          erro: 'A data do lembrete não pode ser no passado.',
+          pessoas,
+          templates,
+          today,
+        });
+      }
+
+      // REGRA: não faz sentido lembrar depois que a tarefa já venceu
+      if (reminderDate > deadlineDate) {
+        return res.render('tasks/nova', {
+          title: 'Nova tarefa',
+          erro: 'A data do lembrete não pode ser depois do prazo de entrega.',
+          pessoas,
+          templates,
+          today,
+        });
+      }
+
+      // REGRA: se preencher o horário, precisa estar no formato HH:MM
+      if (reminderTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime)) {
+        return res.render('tasks/nova', {
+          title: 'Nova tarefa',
+          erro: 'Horário do lembrete inválido.',
+          pessoas,
+          templates,
+          today,
+        });
+      }
     }
 
     const souLider = req.user.role === 'leader';
@@ -65,6 +117,7 @@ async function criarTarefa(req, res) {
       deadline_date: deadlineDate,
       send_reminder: querEnviarLembrete,
       reminder_date: querEnviarLembrete ? reminderDate : null,
+      reminder_time: querEnviarLembrete && reminderTime ? reminderTime : null,
       reminder_type: querEnviarLembrete ? reminderType : null,
       reminder_template_id: querEnviarLembrete && reminderType === 'template' ? reminderTemplateId : null,
       reminder_subject: querEnviarLembrete && reminderType === 'custom' ? reminderSubject : null,
@@ -112,11 +165,13 @@ async function criarTarefa(req, res) {
     console.error(err);
     const pessoas = await personModel.listAll({ onlyVerified: true });
     const templates = await emailModel.listTemplates();
+    const today = new Date().toISOString().slice(0, 10);
     res.render('tasks/nova', {
       title: 'Nova tarefa',
       erro: 'Erro ao criar tarefa. Tente novamente.',
       pessoas,
       templates,
+      today,
     });
   }
 }

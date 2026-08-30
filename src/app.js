@@ -28,11 +28,12 @@ app.use((req, res) => {
   res.status(404).render('errors/nao-encontrado', { title: 'Página não encontrada' });
 });
 
-// "Relógio interno": tenta enviar lembretes todo dia às 8h.
-// Só funciona se o servidor estiver acordado nesse horário -
+// "Relógio interno": confere a cada 10 minutos se algum lembrete
+// (com data e, opcionalmente, horário) já deve ser enviado.
+// Só funciona se o servidor estiver acordado nesse momento -
 // por isso existe também a rota GET /cron/lembretes (veja o README),
 // que pode ser acionada por um serviço externo como garantia extra.
-cron.schedule('0 8 * * *', () => {
+cron.schedule('*/10 * * * *', () => {
   verificarLembretes().catch((err) => console.error('Erro no cron de lembretes:', err));
 });
 

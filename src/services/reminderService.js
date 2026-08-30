@@ -12,11 +12,25 @@ const { sendTaskReminderEmail } = require('./emailService');
  */
 async function verificarLembretes() {
   const pendentes = await taskModel.listPendingReminders();
+  const agora = new Date();
   let enviados = 0;
+  let aindaNaoChegouAHora = 0;
   const erros = [];
 
   for (const task of pendentes) {
     try {
+      // Monta o horário exato do lembrete: data + hora (ou 00:00 se em branco)
+      const horario = task.reminder_time && /^\d{2}:\d{2}$/.test(task.reminder_time)
+        ? task.reminder_time
+        : '00:00';
+      const momentoDoLembrete = new Date(`${task.reminder_date}T${horario}:00`);
+
+      if (momentoDoLembrete > agora) {
+        // Ainda não chegou a hora marcada - pula por enquanto
+        aindaNaoChegouAHora += 1;
+        continue;
+      }
+
       let subject = task.reminder_subject;
       let body = task.reminder_body;
 
@@ -47,7 +61,7 @@ async function verificarLembretes() {
     }
   }
 
-  return { total: pendentes.length, enviados, erros };
+  return { total: pendentes.length, enviados, aindaNaoChegouAHora, erros };
 }
 
 module.exports = { verificarLembretes };

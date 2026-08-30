@@ -60,7 +60,8 @@ async function listAwaitingApproval() {
 /**
  * Tarefas com lembrete pendente de envio: já ativas, com lembrete
  * ligado, ainda não enviado, e a data já chegou (ou passou, caso
- * o servidor estivesse "dormindo" no dia certo).
+ * o servidor estivesse "dormindo" no dia certo). A checagem fina
+ * de horário (quando tem) é feita em reminderService.js.
  */
 async function listPendingReminders() {
   const today = new Date().toISOString().slice(0, 10);
