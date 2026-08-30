@@ -921,29 +921,6 @@ details .form { margin-top: 16px; }
   object-fit: cover;
 }
 
-.crop-mask {
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin: 16px auto;
-  position: relative;
-  background: #111;
-  cursor: grab;
-  touch-action: none;
-}
-.crop-mask:active { cursor: grabbing; }
-.crop-mask img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-origin: 0 0;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.zoom-range { width: 100%; margin: 4px 0 8px; }
-
 .modal-actions {
   display: flex;
   justify-content: flex-end;
