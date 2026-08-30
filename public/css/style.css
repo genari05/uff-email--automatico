@@ -522,9 +522,40 @@ button:hover, .btn-primary:hover {
   top: 0;
   z-index: 10;
   box-shadow: 0 1px 0 0 var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .app-topbar h1 { font-size: 20px; margin: 0; }
+
+.topbar-avatar-link { flex-shrink: 0; line-height: 0; }
+
+.topbar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--color-border-strong);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.topbar-avatar-link:hover .topbar-avatar {
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  transform: translateY(-1px);
+}
+
+.topbar-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
 
 .app-content {
   padding: 32px;
@@ -744,6 +775,182 @@ details .form { margin-top: 16px; }
 @media (min-width: 980px) {
   .tarefas-grid { grid-template-columns: 2fr 1.1fr; }
 }
+
+/* =========================================================
+   PERFIL — página centralizada
+   ========================================================= */
+.perfil-content {
+  display: flex;
+  justify-content: center;
+}
+
+.perfil-card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.perfil-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+.perfil-info strong { font-size: 17px; }
+.perfil-info .badge { margin-top: 4px; }
+
+/* =========================================================
+   EDITOR DE AVATAR — círculo + botão de câmera + menu
+   ========================================================= */
+.avatar-editor {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  margin: 4px auto 18px;
+}
+
+.avatar-circle {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 4px var(--color-surface-muted);
+  background: var(--color-primary-soft);
+}
+
+.avatar-preview-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.avatar-preview-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+}
+
+.avatar-camera-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  border: 2px solid var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+}
+.avatar-camera-btn:hover { background: var(--color-primary-hover); }
+.avatar-camera-btn svg { width: 18px; height: 18px; }
+
+.avatar-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 20;
+  min-width: 210px;
+}
+
+.avatar-menu button {
+  background: none;
+  color: var(--color-text);
+  border: none;
+  box-shadow: none;
+  text-align: left;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 13.5px;
+  justify-content: flex-start;
+}
+.avatar-menu button:hover { background: var(--color-surface-muted); transform: none; box-shadow: none; }
+
+/* =========================================================
+   MODAIS (câmera + recorte)
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(10, 20, 40, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-box {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: var(--shadow-md);
+}
+.modal-box h3 { margin: 0 0 4px; }
+
+.camera-video {
+  width: 100%;
+  border-radius: var(--radius-md);
+  background: #000;
+  margin: 12px 0;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+.crop-mask {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 16px auto;
+  position: relative;
+  background: #111;
+  cursor: grab;
+  touch-action: none;
+}
+.crop-mask:active { cursor: grabbing; }
+.crop-mask img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.zoom-range { width: 100%; margin: 4px 0 8px; }
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .stat-mono {
   font-family: var(--font-mono);
   font-size: 13px;

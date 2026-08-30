@@ -1,3 +1,11 @@
 <div class="app-topbar">
   <h1><%= typeof pageTitle !== 'undefined' ? pageTitle : title %></h1>
+
+  <a href="/perfil" class="topbar-avatar-link" title="Meu perfil">
+    <% if (currentUser.people.avatar_url) { %>
+      <img src="<%= currentUser.people.avatar_url %>" alt="" class="topbar-avatar">
+    <% } else { %>
+      <div class="topbar-avatar topbar-avatar-fallback"><%= currentUser.people.name.charAt(0).toUpperCase() %></div>
+    <% } %>
+  </a>
 </div>
