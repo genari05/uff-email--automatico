@@ -310,11 +310,10 @@ async function excluirTarefa(req, res) {
     const task = await taskModel.findById(id);
     if (!task) return res.redirect('/tarefas');
 
+    // Apaga o rastro dessa tarefa no mural também (sem deixar nem
+    // um aviso novo de exclusão) - some por completo.
+    await activityModel.deleteByTask(id);
     await taskModel.remove(id);
-    await activityModel.log(
-      `${req.user.people.name} excluiu a tarefa "${task.title}" (era de ${task.people.name})`,
-      'task_deleted'
-    );
 
     res.redirect('/tarefas');
   } catch (err) {

@@ -17,4 +17,9 @@ async function listRecent(limit = 30) {
   return data;
 }
 
-module.exports = { log, listRecent };
+async function deleteByTask(taskId) {
+  const { error } = await supabase.from(TABLE).delete().eq('task_id', taskId);
+  if (error) console.error('Erro ao remover atividades da tarefa:', error.message);
+}
+
+module.exports = { log, listRecent, deleteByTask };

@@ -8,7 +8,7 @@
     <div class="app-main">
       <%- include('../partials/app-topbar', { pageTitle: 'Painel de tarefas' }) %>
 
-      <div class="app-content tarefas-grid">
+      <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
         <div class="card">
           <h2 style="margin-top:0;">Todas as tarefas</h2>
 
@@ -62,21 +62,32 @@
 
         <div class="card">
           <h2 style="margin-top:0;">Mural de atividades</h2>
+
           <% if (atividades.length === 0) { %>
-            <div class="empty-state" style="padding: 32px 16px;">
-              <div class="empty-state-icon" style="width:52px; height:52px; font-size:26px;">Ψ</div>
-              <h3 style="font-size:14px;">Nada por aqui ainda</h3>
-              <p>Conclusões, novas tarefas e lembretes enviados vão aparecer aqui em tempo real.</p>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nada por aqui ainda</h3>
+              <p>Conclusões, novas tarefas e lembretes enviados vão aparecer aqui, como uma conversa da equipe.</p>
             </div>
           <% } else { %>
-            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
-              <% atividades.forEach(a => { %>
-                <li style="padding:10px 12px; border:1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px;">
-                  <%= a.message %>
-                  <br><small style="color: var(--color-text-muted);"><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
-                </li>
+            <div class="mural-chat">
+              <% atividades.slice().reverse().forEach((a, i) => { %>
+                <%
+                  let corPonto = 'dot-primary';
+                  if (a.type === 'task_completed' || a.type === 'task_approved') corPonto = 'dot-sucesso';
+                  else if (a.type === 'reminder_sent') corPonto = 'dot-aviso';
+                  else if (a.type === 'task_denied') corPonto = 'dot-negado';
+                  const lado = i % 2 === 0 ? 'esquerda' : 'direita';
+                %>
+                <div class="mural-bubble <%= lado %>">
+                  <span class="mural-dot <%= corPonto %>"></span>
+                  <div>
+                    <%= a.message %>
+                    <small><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
+                  </div>
+                </div>
               <% }) %>
-            </ul>
+            </div>
           <% } %>
         </div>
       </div>
