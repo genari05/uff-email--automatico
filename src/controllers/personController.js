@@ -5,7 +5,7 @@ const { sendVerificationEmail } = require('../services/emailService');
 
 // GET /pessoas/nova -> formulário de cadastro
 function formNovaPessoa(req, res) {
-  res.render('people/form', { title: 'Cadastrar pessoa', erro: null });
+  res.render('people/form', { title: 'Realizar Cadastro', erro: null });
 }
 
 // POST /pessoas -> cria pessoa + dispara e-mail de verificação
@@ -15,7 +15,7 @@ async function criarPessoa(req, res) {
 
     if (!name || !email) {
       return res.render('people/form', {
-        title: 'Cadastrar pessoa',
+        title: 'Realizar Cadastro',
         erro: 'Preencha nome e e-mail.',
       });
     }
@@ -23,7 +23,7 @@ async function criarPessoa(req, res) {
     const existente = await personModel.findByEmail(email.toLowerCase().trim());
     if (existente) {
       return res.render('people/form', {
-        title: 'Cadastrar pessoa',
+        title: 'Realizar Cadastro',
         erro: 'Já existe uma pessoa cadastrada com esse e-mail.',
       });
     }
@@ -49,7 +49,7 @@ async function criarPessoa(req, res) {
   } catch (err) {
     console.error(err);
     res.render('people/form', {
-      title: 'Cadastrar pessoa',
+      title: 'Realizar Cadastro',
       erro: 'Erro ao cadastrar. Tente novamente.',
     });
   }

@@ -22,7 +22,7 @@ async function solicitar(req, res) {
     if (!person) {
       return res.render('auth/solicitar-acesso', {
         title: 'Solicitar acesso',
-        erro: 'Nenhuma pessoa cadastrada com esse e-mail. Peça para te cadastrarem primeiro.',
+        erro: 'Nenhuma pessoa cadastrada com esse e-mail. vá em cadastrar email ou entre em contatoo com o Lider.',
         sucesso: null,
       });
     }
