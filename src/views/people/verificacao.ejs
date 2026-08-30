@@ -2,12 +2,25 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="auth-shell">
+    <%- include('../partials/auth-panel', {
+      heroTitle: sucesso ? 'E-mail confirmado.' : 'Algo não saiu como esperado.',
+      heroText: sucesso ? 'Você já pode solicitar acesso ao painel quando quiser.' : 'Verifique o link ou peça um novo cadastro.'
+    }) %>
 
-  <main class="container">
-    <h1><%= sucesso ? '✅ E-mail confirmado' : '⚠️ Ops' %></h1>
-    <p><%= mensagem %></p>
-    <p><a href="/auth/login">Ir para o login</a></p>
-  </main>
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <span class="badge <%= sucesso ? 'badge-sucesso' : '' %>" style="margin-bottom: 16px;">
+          <%= sucesso ? 'Verificado' : 'Link inválido' %>
+        </span>
+        <h1><%= sucesso ? 'E-mail confirmado' : 'Ops' %></h1>
+        <p><%= mensagem %></p>
+
+        <div class="auth-links">
+          <a href="/auth/login">Ir para o login</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

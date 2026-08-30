@@ -2,12 +2,22 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="auth-shell">
+    <%- include('../partials/auth-panel', {
+      heroTitle: 'Essa página não existe.',
+      heroText: 'Confira o endereço digitado ou volte para o início.'
+    }) %>
 
-  <main class="container">
-    <h1>404</h1>
-    <p>Página não encontrada.</p>
-    <p><a href="/">Voltar ao início</a></p>
-  </main>
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <h1 style="font-size: 48px;">404</h1>
+        <p>A página que você tentou acessar não foi encontrada.</p>
+
+        <div class="auth-links">
+          <a href="/">Voltar ao início</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

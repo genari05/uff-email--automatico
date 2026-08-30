@@ -2,33 +2,39 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
 
-  <main class="container">
-    <h1>Selecionar destinatários</h1>
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Selecionar destinatários' }) %>
 
-    <form method="POST" action="/emails/selecionar" class="form">
-      <label class="checkbox-linha">
-        <input type="checkbox" id="selecionar-todos">
-        <b>Selecionar todos</b>
-      </label>
+      <div class="app-content">
+        <div class="card" style="max-width: 560px;">
+          <form method="POST" action="/emails/selecionar" class="form" style="max-width: none;">
+            <label class="checkbox-linha" style="background: var(--color-surface-muted); font-weight: 600;">
+              <input type="checkbox" id="selecionar-todos">
+              Selecionar todos
+            </label>
 
-      <hr>
+            <div style="margin-top: 12px;">
+              <% pessoas.forEach(p => { %>
+                <label class="checkbox-linha">
+                  <input type="checkbox" name="destinatarios" value="<%= p.id %>" class="checkbox-pessoa">
+                  <span><%= p.name %> — <small><%= p.email %></small></span>
+                </label>
+              <% }) %>
+            </div>
 
-      <% pessoas.forEach(p => { %>
-        <label class="checkbox-linha">
-          <input type="checkbox" name="destinatarios" value="<%= p.id %>" class="checkbox-pessoa">
-          <%= p.name %> — <small><%= p.email %></small>
-        </label>
-      <% }) %>
+            <% if (pessoas.length === 0) { %>
+              <p>Nenhuma pessoa com e-mail verificado ainda.</p>
+            <% } %>
 
-      <% if (pessoas.length === 0) { %>
-        <p>Nenhuma pessoa com e-mail verificado ainda.</p>
-      <% } %>
-
-      <button type="submit">Continuar</button>
-    </form>
-  </main>
+            <button type="submit">Continuar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     const master = document.getElementById('selecionar-todos');

@@ -2,24 +2,35 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="auth-shell">
+    <%- include('../partials/auth-panel', {
+      heroTitle: 'Quase lá.',
+      heroText: 'Crie uma senha segura para começar a usar o sistema.'
+    }) %>
 
-  <main class="container">
-    <h1>Criar senha de acesso</h1>
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <h1>Criar senha de acesso</h1>
 
-    <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+        <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
 
-    <% if (tokenValido) { %>
-      <form method="POST" action="/auth/definir-senha/<%= token %>" class="form">
-        <label for="password">Nova senha</label>
-        <input type="password" id="password" name="password" minlength="6" required>
+        <% if (tokenValido) { %>
+          <form method="POST" action="/auth/definir-senha/<%= token %>" class="form">
+            <label for="password">Nova senha</label>
+            <input type="password" id="password" name="password" minlength="6" required autofocus>
 
-        <label for="confirmarSenha">Confirmar senha</label>
-        <input type="password" id="confirmarSenha" name="confirmarSenha" minlength="6" required>
+            <label for="confirmarSenha">Confirmar senha</label>
+            <input type="password" id="confirmarSenha" name="confirmarSenha" minlength="6" required>
 
-        <button type="submit">Salvar senha</button>
-      </form>
-    <% } %>
-  </main>
+            <button type="submit">Salvar senha</button>
+          </form>
+        <% } %>
+
+        <div class="auth-links">
+          <a href="/auth/login">Voltar para o login</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

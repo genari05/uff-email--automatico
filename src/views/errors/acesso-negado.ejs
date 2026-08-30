@@ -2,12 +2,23 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="auth-shell">
+    <%- include('../partials/auth-panel', {
+      heroTitle: 'Acesso restrito.',
+      heroText: 'Essa área é reservada para o líder do sistema.'
+    }) %>
 
-  <main class="container">
-    <h1>🚫 Acesso negado</h1>
-    <p><%= mensagem %></p>
-    <p><a href="/auth/login">Voltar para o login</a></p>
-  </main>
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <span class="badge" style="margin-bottom: 16px; border-color:#F1C1C8; color: var(--color-danger); background: var(--color-danger-bg);">Acesso negado</span>
+        <h1>Sem permissão</h1>
+        <p><%= mensagem %></p>
+
+        <div class="auth-links">
+          <a href="/auth/login">Voltar para o login</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

@@ -2,13 +2,24 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="auth-shell">
+    <%- include('../partials/auth-panel', {
+      heroTitle: 'Cadastro recebido.',
+      heroText: 'Falta só um passo: confirmar o e-mail para entrar oficialmente na rede.'
+    }) %>
 
-  <main class="container">
-    <h1>Cadastro realizado! ✅</h1>
-    <p><b><%= pessoa.name %></b> foi cadastrado(a) com sucesso.</p>
-    <p>Enviamos um e-mail de verificação para <b><%= pessoa.email %></b>. É necessário confirmar o e-mail para começar a receber comunicados.</p>
-    <p><a href="/pessoas/nova">Cadastrar outra pessoa</a></p>
-  </main>
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <span class="badge badge-sucesso" style="margin-bottom: 16px;">Cadastro concluído</span>
+        <h1>Tudo certo, <%= pessoa.name.split(' ')[0] %>!</h1>
+        <p>Enviamos um e-mail de verificação para <b><%= pessoa.email %></b>. É necessário confirmar o e-mail para começar a receber comunicados.</p>
+
+        <div class="auth-links">
+          <a href="/pessoas/nova">Cadastrar outra pessoa</a>
+          <a href="/auth/login">Ir para o login</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

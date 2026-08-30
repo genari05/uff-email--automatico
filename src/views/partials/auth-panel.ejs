@@ -1,0 +1,46 @@
+<%
+  const _titulo = typeof heroTitle !== 'undefined' ? heroTitle : 'Uma rede de pessoas, um clique de distância.';
+  const _texto = typeof heroText !== 'undefined' ? heroText : 'Cadastre, verifique e envie comunicados oficiais com controle de acesso e histórico completo.';
+%>
+<div class="auth-panel">
+  <div class="auth-panel-top">
+    <div class="auth-brand">
+      <span class="dot-live"></span>
+      Sistema UFF
+    </div>
+    <h1 class="auth-headline"><%= _titulo %></h1>
+    <p class="auth-subtext"><%= _texto %></p>
+  </div>
+
+  <svg class="auth-network" viewBox="0 0 480 420" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g stroke="#35C4E8" stroke-opacity="0.35" stroke-width="1">
+      <line x1="60" y1="80" x2="180" y2="150"/>
+      <line x1="180" y1="150" x2="120" y2="260"/>
+      <line x1="180" y1="150" x2="300" y2="120"/>
+      <line x1="300" y1="120" x2="400" y2="200"/>
+      <line x1="300" y1="120" x2="260" y2="240"/>
+      <line x1="260" y1="240" x2="120" y2="260"/>
+      <line x1="260" y1="240" x2="360" y2="320"/>
+      <line x1="120" y1="260" x2="60" y2="360"/>
+      <line x1="360" y1="320" x2="420" y2="380"/>
+      <line x1="400" y1="200" x2="450" y2="290"/>
+    </g>
+    <g fill="#7FDCF2">
+      <circle cx="60" cy="80" r="4" class="node-pulse" style="animation-delay:0s"/>
+      <circle cx="180" cy="150" r="5" class="node-pulse" style="animation-delay:0.3s"/>
+      <circle cx="120" cy="260" r="4" class="node-pulse" style="animation-delay:0.6s"/>
+      <circle cx="300" cy="120" r="4" class="node-pulse" style="animation-delay:0.9s"/>
+      <circle cx="400" cy="200" r="5" class="node-pulse" style="animation-delay:1.2s"/>
+      <circle cx="260" cy="240" r="4" class="node-pulse" style="animation-delay:0.2s"/>
+      <circle cx="360" cy="320" r="4" class="node-pulse" style="animation-delay:0.5s"/>
+      <circle cx="60" cy="360" r="4" class="node-pulse" style="animation-delay:0.8s"/>
+      <circle cx="420" cy="380" r="4" class="node-pulse" style="animation-delay:1.1s"/>
+      <circle cx="450" cy="290" r="4" class="node-pulse" style="animation-delay:1.4s"/>
+    </g>
+  </svg>
+
+  <div class="auth-status">
+    <span class="dot-live"></span>
+    Sistema ativo — dados protegidos via Supabase
+  </div>
+</div>

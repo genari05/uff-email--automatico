@@ -83,21 +83,30 @@ async function solicitar(req, res) {
 
 // GET /acesso/virar-lider -> membro logado vê a tela de pedir para virar líder
 async function formSolicitarLider(req, res) {
-  if (req.user.role === 'leader') {
-    return res.render('auth/solicitar-lider', {
+  try {
+    if (req.user.role === 'leader') {
+      return res.render('auth/solicitar-lider', {
+        title: 'Virar líder',
+        erro: 'Você já é líder do sistema.',
+        sucesso: null,
+      });
+    }
+
+    const ultimoPedido = await accessRequestModel.findLatestByPerson(req.user.person_id, 'leader');
+    res.render('auth/solicitar-lider', {
       title: 'Virar líder',
-      erro: 'Você já é líder do sistema.',
+      erro: null,
+      sucesso: null,
+      pedidoPendente: ultimoPedido?.status === 'pending',
+    });
+  } catch (err) {
+    console.error(err);
+    res.render('auth/solicitar-lider', {
+      title: 'Virar líder',
+      erro: 'Erro ao carregar. Verifique se a migração do banco foi executada.',
       sucesso: null,
     });
   }
-
-  const ultimoPedido = await accessRequestModel.findLatestByPerson(req.user.person_id, 'leader');
-  res.render('auth/solicitar-lider', {
-    title: 'Virar líder',
-    erro: null,
-    sucesso: null,
-    pedidoPendente: ultimoPedido?.status === 'pending',
-  });
 }
 
 // POST /acesso/virar-lider -> cria o pedido de promoção a líder

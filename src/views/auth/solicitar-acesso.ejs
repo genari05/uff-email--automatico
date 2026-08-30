@@ -2,22 +2,31 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="auth-shell">
+    <%- include('../partials/auth-panel', {
+      heroTitle: 'Peça acesso em segundos.',
+      heroText: 'Um líder do sistema vai avaliar seu pedido — você recebe a resposta por e-mail.'
+    }) %>
 
-  <main class="container">
-    <h1>Solicitar acesso</h1>
-    <p>Digite o e-mail que você usou no cadastro (já verificado) para pedir acesso ao painel.</p>
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <h1>Solicitar acesso</h1>
+        <p>Digite o e-mail que você usou no cadastro (já verificado) para pedir acesso ao painel.</p>
 
-    <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
-    <% if (sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
+        <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+        <% if (sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
 
-    <form method="POST" action="/acesso/solicitar" class="form">
-      <label for="email">Seu e-mail institucional</label>
-      <input type="email" id="email" name="email" required>
-      <button type="submit">Enviar pedido</button>
-    </form>
+        <form method="POST" action="/acesso/solicitar" class="form">
+          <label for="email">Seu e-mail institucional</label>
+          <input type="email" id="email" name="email" required autofocus>
+          <button type="submit">Enviar pedido</button>
+        </form>
 
-    <p><a href="/auth/login">Voltar para o login</a></p>
-  </main>
+        <div class="auth-links">
+          <a href="/auth/login">Voltar para o login</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

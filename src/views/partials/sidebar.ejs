@@ -1,0 +1,41 @@
+<aside class="sidebar">
+  <div>
+    <div class="sidebar-brand">
+      <span class="dot-live"></span>
+      Sistema UFF
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/pessoas" class="<%= currentPath === '/pessoas' ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 17v-1.5a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3V17"/><circle cx="7" cy="6.5" r="3"/><path d="M17 17v-1.3a2.7 2.7 0 0 0-2-2.6"/><path d="M12 3.2a3 3 0 0 1 0 5.7"/></svg>
+        Pessoas
+      </a>
+      <a href="/emails/selecionar" class="<%= currentPath.startsWith('/emails') ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 5.5 10 11l7.5-5.5"/><rect x="2.5" y="4" width="15" height="12" rx="1.6"/></svg>
+        Enviar e-mail
+      </a>
+      <% if (currentUser.role === 'leader') { %>
+        <a href="/acesso/pendentes" class="<%= currentPath === '/acesso/pendentes' ? 'ativo' : '' %>">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="13" rx="1.6"/><path d="M2.5 8.5h15"/><path d="M6 12.2l2 2 4-4"/></svg>
+          Pedidos pendentes
+        </a>
+      <% } else { %>
+        <a href="/acesso/virar-lider" class="<%= currentPath === '/acesso/virar-lider' ? 'ativo' : '' %>">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 15.5 5 7l3.2 3.2L10 6l1.8 4.2L15 7l2 8.5z"/></svg>
+          Virar líder
+        </a>
+      <% } %>
+    </nav>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <span class="sidebar-user-name"><%= currentUser.people.name %></span>
+      <span class="sidebar-user-email"><%= currentUser.people.email %></span>
+      <span class="badge <%= currentUser.role === 'leader' ? 'badge-lider' : '' %>" style="margin-top:4px; align-self:flex-start;">
+        <%= currentUser.role === 'leader' ? 'Líder' : 'Membro' %>
+      </span>
+    </div>
+    <a href="/auth/logout" class="sair">Sair da conta</a>
+  </div>
+</aside>

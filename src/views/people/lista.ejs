@@ -2,37 +2,46 @@
 <html lang="pt-BR">
 <head><%- include('../partials/head') %></head>
 <body>
-  <%- include('../partials/nav') %>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
 
-  <main class="container">
-    <h1>Pessoas cadastradas</h1>
-    <p><a href="/pessoas/nova">+ Cadastrar nova pessoa</a></p>
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Pessoas cadastradas' }) %>
 
-    <div class="table-wrapper">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Verificado</th>
-            <th>Cadastrado em</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% pessoas.forEach(p => { %>
-            <tr>
-              <td data-label="Nome"><%= p.name %></td>
-              <td data-label="E-mail"><%= p.email %></td>
-              <td data-label="Verificado"><%= p.verified ? '✅ Sim' : '⏳ Pendente' %></td>
-              <td data-label="Cadastrado em"><%= new Date(p.created_at).toLocaleDateString('pt-BR') %></td>
-            </tr>
-          <% }) %>
-          <% if (pessoas.length === 0) { %>
-            <tr><td colspan="4">Nenhuma pessoa cadastrada ainda.</td></tr>
-          <% } %>
-        </tbody>
-      </table>
+      <div class="app-content">
+        <p><a href="/pessoas/nova">+ Cadastrar nova pessoa</a></p>
+
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Status</th>
+                <th>Cadastrado em</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% pessoas.forEach(p => { %>
+                <tr>
+                  <td data-label="Nome"><%= p.name %></td>
+                  <td data-label="E-mail"><span class="stat-mono"><%= p.email %></span></td>
+                  <td data-label="Status">
+                    <span class="badge <%= p.verified ? 'badge-sucesso' : 'badge-pendente' %>">
+                      <%= p.verified ? 'Verificado' : 'Pendente' %>
+                    </span>
+                  </td>
+                  <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR') %></span></td>
+                </tr>
+              <% }) %>
+              <% if (pessoas.length === 0) { %>
+                <tr><td colspan="4">Nenhuma pessoa cadastrada ainda.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  </main>
+  </div>
 </body>
 </html>
