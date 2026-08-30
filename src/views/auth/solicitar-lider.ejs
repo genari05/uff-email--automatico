@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <%- include('../partials/nav') %>
+
+  <main class="container">
+    <h1>Solicitar para virar líder</h1>
+    <p>Envie um pedido para o(s) líder(es) atual(is) avaliarem se você pode se tornar líder do sistema.</p>
+
+    <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+    <% if (sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
+
+    <% if (typeof pedidoPendente !== 'undefined' && pedidoPendente) { %>
+      <p class="alerta">Você já tem um pedido pendente. Aguarde a análise.</p>
+    <% } else if (!erro) { %>
+      <form method="POST" action="/acesso/virar-lider" class="form">
+        <button type="submit">Solicitar</button>
+      </form>
+    <% } %>
+
+    <p><a href="/pessoas">Voltar</a></p>
+  </main>
+</body>
+</html>

@@ -102,30 +102,6 @@ async function sendNewAccessRequestEmail({ to, requesterName }) {
 }
 
 /**
- * Avisa o(s) líder(es) que alguém quer virar líder também.
- */
-async function sendNewLeaderRequestEmail({ to, requesterName }) {
-  const link = `${env.appUrl}/acesso/pendentes`;
-  return sendMail({
-    to,
-    subject: 'Pedido para virar líder - Sistema UFF',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Pedido de promoção a líder</h2>
-        <p><b>${requesterName}</b> solicitou se tornar líder do sistema de e-mails da UFF.</p>
-        <p>
-          <a href="${link}"
-             style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
-                    text-decoration:none;border-radius:6px;">
-            Ver pedidos pendentes
-          </a>
-        </p>
-      </div>
-    `,
-  });
-}
-
-/**
  * Envio em massa (template "programado" ou personalizado) para
  * a lista de destinatários selecionada pelo usuário autorizado.
  */
@@ -145,6 +121,5 @@ module.exports = {
   sendVerificationEmail,
   sendAccessApprovedEmail,
   sendNewAccessRequestEmail,
-  sendNewLeaderRequestEmail,
   sendBulkEmail,
 };

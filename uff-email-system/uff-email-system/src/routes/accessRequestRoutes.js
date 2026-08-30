@@ -10,10 +10,6 @@ router.post('/solicitar', accessRequestController.solicitar);
 router.get('/status', accessRequestController.formStatus);
 router.get('/status/consultar', accessRequestController.verStatus);
 
-// Protegida - qualquer membro logado pode pedir para virar líder
-router.get('/virar-lider', requireAuth, accessRequestController.formSolicitarLider);
-router.post('/virar-lider', requireAuth, accessRequestController.solicitarLider);
-
 // Protegidas - só o líder aprova/nega
 router.get('/pendentes', requireAuth, requireLeader, accessRequestController.listarPendentes);
 router.post('/:id/resolver', requireAuth, requireLeader, accessRequestController.resolver);

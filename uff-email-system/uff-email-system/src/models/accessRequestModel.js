@@ -2,10 +2,10 @@ const supabase = require('../config/supabase');
 
 const TABLE = 'access_requests';
 
-async function create(personId, requestType = 'access') {
+async function create(personId) {
   const { data, error } = await supabase
     .from(TABLE)
-    .insert([{ person_id: personId, status: 'pending', request_type: requestType }])
+    .insert([{ person_id: personId, status: 'pending' }])
     .select()
     .single();
 
@@ -14,15 +14,14 @@ async function create(personId, requestType = 'access') {
 }
 
 /**
- * Pega o pedido mais recente de uma pessoa de um determinado tipo
- * (para saber se ela já está pendente, já foi negada, ou nunca pediu).
+ * Pega o pedido mais recente de uma pessoa (para saber se ela já
+ * está pendente, já foi negada, ou nunca pediu).
  */
-async function findLatestByPerson(personId, requestType = 'access') {
+async function findLatestByPerson(personId) {
   const { data, error } = await supabase
     .from(TABLE)
     .select('*')
     .eq('person_id', personId)
-    .eq('request_type', requestType)
     .order('requested_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -31,16 +30,13 @@ async function findLatestByPerson(personId, requestType = 'access') {
   return data;
 }
 
-async function listPending(requestType = null) {
-  let query = supabase
+async function listPending() {
+  const { data, error } = await supabase
     .from(TABLE)
     .select('*, people(*)')
     .eq('status', 'pending')
     .order('requested_at', { ascending: true });
 
-  if (requestType) query = query.eq('request_type', requestType);
-
-  const { data, error } = await query;
   if (error) throw error;
   return data;
 }

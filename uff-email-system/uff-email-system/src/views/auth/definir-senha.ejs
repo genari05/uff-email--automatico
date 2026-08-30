@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <%- include('../partials/nav') %>
+
+  <main class="container">
+    <h1>Criar senha de acesso</h1>
+
+    <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+
+    <% if (tokenValido) { %>
+      <form method="POST" action="/auth/definir-senha/<%= token %>" class="form">
+        <label for="password">Nova senha</label>
+        <input type="password" id="password" name="password" minlength="6" required>
+
+        <label for="confirmarSenha">Confirmar senha</label>
+        <input type="password" id="confirmarSenha" name="confirmarSenha" minlength="6" required>
+
+        <button type="submit">Salvar senha</button>
+      </form>
+    <% } %>
+  </main>
+</body>
+</html>

@@ -6,8 +6,6 @@
       <a href="/emails/selecionar">Enviar e-mail</a>
       <% if (currentUser.role === 'leader') { %>
         <a href="/acesso/pendentes">Pedidos de acesso</a>
-      <% } else { %>
-        <a href="/acesso/virar-lider">Virar líder</a>
       <% } %>
       <a href="/auth/logout">Sair</a>
     <% } else { %>

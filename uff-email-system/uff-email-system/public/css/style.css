@@ -89,14 +89,6 @@ body {
 
 .acoes-pedido { display: flex; gap: 8px; }
 
-.badge {
-  display: inline-block;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid #999;
-}
-
 .opcoes-tipo {
   display: grid;
   grid-template-columns: 1fr;

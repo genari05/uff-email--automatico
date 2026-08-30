@@ -90,18 +90,6 @@ async function findLeaders() {
   return data;
 }
 
-async function promoteToLeader(personId) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .update({ role: 'leader' })
-    .eq('person_id', personId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
 async function findById(id) {
   const { data, error } = await supabase
     .from(TABLE)
@@ -122,5 +110,4 @@ module.exports = {
   setPassword,
   findById,
   findLeaders,
-  promoteToLeader,
 };

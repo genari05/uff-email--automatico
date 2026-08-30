@@ -2,11 +2,7 @@ const personModel = require('../models/personModel');
 const userModel = require('../models/userModel');
 const accessRequestModel = require('../models/accessRequestModel');
 const { generateToken, expiresInHours } = require('../services/tokenService');
-const {
-  sendAccessApprovedEmail,
-  sendNewAccessRequestEmail,
-  sendNewLeaderRequestEmail,
-} = require('../services/emailService');
+const { sendAccessApprovedEmail, sendNewAccessRequestEmail } = require('../services/emailService');
 
 // GET /acesso/solicitar -> tela com campo de e-mail para pedir acesso
 function formSolicitar(req, res) {
@@ -46,7 +42,7 @@ async function solicitar(req, res) {
       });
     }
 
-    const ultimoPedido = await accessRequestModel.findLatestByPerson(person.id, 'access');
+    const ultimoPedido = await accessRequestModel.findLatestByPerson(person.id);
     if (ultimoPedido && ultimoPedido.status === 'pending') {
       return res.render('auth/solicitar-acesso', {
         title: 'Solicitar acesso',
@@ -57,7 +53,7 @@ async function solicitar(req, res) {
 
     // Cria novo pedido (mesmo que o último tenha sido negado - a pessoa
     // pode solicitar quantas vezes quiser até ser aceita)
-    await accessRequestModel.create(person.id, 'access');
+    await accessRequestModel.create(person.id);
 
     const leaders = await userModel.findLeaders();
     await Promise.allSettled(
@@ -75,69 +71,6 @@ async function solicitar(req, res) {
     console.error(err);
     res.render('auth/solicitar-acesso', {
       title: 'Solicitar acesso',
-      erro: 'Erro ao enviar pedido. Tente novamente.',
-      sucesso: null,
-    });
-  }
-}
-
-// GET /acesso/virar-lider -> membro logado vê a tela de pedir para virar líder
-async function formSolicitarLider(req, res) {
-  if (req.user.role === 'leader') {
-    return res.render('auth/solicitar-lider', {
-      title: 'Virar líder',
-      erro: 'Você já é líder do sistema.',
-      sucesso: null,
-    });
-  }
-
-  const ultimoPedido = await accessRequestModel.findLatestByPerson(req.user.person_id, 'leader');
-  res.render('auth/solicitar-lider', {
-    title: 'Virar líder',
-    erro: null,
-    sucesso: null,
-    pedidoPendente: ultimoPedido?.status === 'pending',
-  });
-}
-
-// POST /acesso/virar-lider -> cria o pedido de promoção a líder
-async function solicitarLider(req, res) {
-  try {
-    if (req.user.role === 'leader') {
-      return res.render('auth/solicitar-lider', {
-        title: 'Virar líder',
-        erro: 'Você já é líder do sistema.',
-        sucesso: null,
-      });
-    }
-
-    const ultimoPedido = await accessRequestModel.findLatestByPerson(req.user.person_id, 'leader');
-    if (ultimoPedido && ultimoPedido.status === 'pending') {
-      return res.render('auth/solicitar-lider', {
-        title: 'Virar líder',
-        erro: 'Você já tem um pedido pendente. Aguarde a análise.',
-        sucesso: null,
-      });
-    }
-
-    await accessRequestModel.create(req.user.person_id, 'leader');
-
-    const leaders = await userModel.findLeaders();
-    await Promise.allSettled(
-      leaders.map((leader) =>
-        sendNewLeaderRequestEmail({ to: leader.people.email, requesterName: req.user.people.name })
-      )
-    );
-
-    res.render('auth/solicitar-lider', {
-      title: 'Virar líder',
-      erro: null,
-      sucesso: 'Pedido enviado! Um líder atual vai avaliar sua solicitação.',
-    });
-  } catch (err) {
-    console.error(err);
-    res.render('auth/solicitar-lider', {
-      title: 'Virar líder',
       erro: 'Erro ao enviar pedido. Tente novamente.',
       sucesso: null,
     });
@@ -188,17 +121,11 @@ async function verStatus(req, res) {
 
 // GET /acesso/pendentes -> painel do líder (protegido por requireAuth + requireLeader)
 async function listarPendentes(req, res) {
-  const todosPedidos = await accessRequestModel.listPending();
-  const pedidosAcesso = todosPedidos.filter((p) => p.request_type === 'access');
-  const pedidosLider = todosPedidos.filter((p) => p.request_type === 'leader');
-  res.render('dashboard/pedidos-acesso', {
-    title: 'Pedidos de acesso',
-    pedidosAcesso,
-    pedidosLider,
-  });
+  const pedidos = await accessRequestModel.listPending();
+  res.render('dashboard/pedidos-acesso', { title: 'Pedidos de acesso', pedidos });
 }
 
-// POST /acesso/:id/resolver -> líder aprova ou nega (pedido de acesso OU de virar líder)
+// POST /acesso/:id/resolver -> líder aprova ou nega
 async function resolver(req, res) {
   try {
     const { id } = req.params;
@@ -209,8 +136,7 @@ async function resolver(req, res) {
 
     await accessRequestModel.resolve(id, { status: decisao, resolvedBy: req.user.id });
 
-    if (decisao === 'approved' && pedido.request_type === 'access') {
-      // Pedido de ACESSO aprovado -> gera link para criar senha
+    if (decisao === 'approved') {
       const user = await userModel.findByPersonId(pedido.person_id);
       const token = generateToken();
       await userModel.grantAccess(user.id, {
@@ -224,11 +150,6 @@ async function resolver(req, res) {
       });
     }
 
-    if (decisao === 'approved' && pedido.request_type === 'leader') {
-      // Pedido de LÍDER aprovado -> a pessoa já tem senha, só muda o papel
-      await userModel.promoteToLeader(pedido.person_id);
-    }
-
     res.redirect('/acesso/pendentes');
   } catch (err) {
     console.error(err);
@@ -239,8 +160,6 @@ async function resolver(req, res) {
 module.exports = {
   formSolicitar,
   solicitar,
-  formSolicitarLider,
-  solicitarLider,
   formStatus,
   verStatus,
   listarPendentes,
