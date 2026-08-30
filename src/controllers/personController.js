@@ -1,11 +1,12 @@
 const personModel = require('../models/personModel');
 const userModel = require('../models/userModel');
+const accessRequestModel = require('../models/accessRequestModel');
 const { generateToken, expiresInHours } = require('../services/tokenService');
-const { sendVerificationEmail } = require('../services/emailService');
+const { sendVerificationEmail, sendNewAccessRequestEmail } = require('../services/emailService');
 
 // GET /pessoas/nova -> formulário de cadastro
 function formNovaPessoa(req, res) {
-  res.render('people/form', { title: 'Realizar Cadastro', erro: null });
+  res.render('people/form', { title: 'Cadastrar pessoa', erro: null });
 }
 
 // POST /pessoas -> cria pessoa + dispara e-mail de verificação
@@ -15,7 +16,7 @@ async function criarPessoa(req, res) {
 
     if (!name || !email) {
       return res.render('people/form', {
-        title: 'Realizar Cadastro',
+        title: 'Cadastrar pessoa',
         erro: 'Preencha nome e e-mail.',
       });
     }
@@ -23,7 +24,7 @@ async function criarPessoa(req, res) {
     const existente = await personModel.findByEmail(email.toLowerCase().trim());
     if (existente) {
       return res.render('people/form', {
-        title: 'Realizar Cadastro',
+        title: 'Cadastrar pessoa',
         erro: 'Já existe uma pessoa cadastrada com esse e-mail.',
       });
     }
@@ -40,6 +41,18 @@ async function criarPessoa(req, res) {
     // podermos ligar pedidos de acesso a essa pessoa depois.
     await userModel.createForPerson(person.id);
 
+    // Cria automaticamente o pedido de acesso, pra pessoa não precisar
+    // fazer isso manualmente depois. Fica pendente até o líder aprovar
+    // (e o ideal é o líder esperar a pessoa confirmar o e-mail antes).
+    await accessRequestModel.create(person.id, 'access');
+
+    const leaders = await userModel.findLeaders();
+    await Promise.allSettled(
+      leaders.map((leader) =>
+        sendNewAccessRequestEmail({ to: leader.people.email, requesterName: person.name })
+      )
+    );
+
     await sendVerificationEmail({ to: person.email, name: person.name, token });
 
     res.render('people/sucesso', {
@@ -49,7 +62,7 @@ async function criarPessoa(req, res) {
   } catch (err) {
     console.error(err);
     res.render('people/form', {
-      title: 'Realizar Cadastro',
+      title: 'Cadastrar pessoa',
       erro: 'Erro ao cadastrar. Tente novamente.',
     });
   }

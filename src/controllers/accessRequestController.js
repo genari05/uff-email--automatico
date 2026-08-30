@@ -22,7 +22,7 @@ async function solicitar(req, res) {
     if (!person) {
       return res.render('auth/solicitar-acesso', {
         title: 'Solicitar acesso',
-        erro: 'Nenhuma pessoa cadastrada com esse e-mail. vá em cadastrar email ou entre em contatoo com o Lider.',
+        erro: 'Nenhuma pessoa cadastrada com esse e-mail. Peça para te cadastrarem primeiro.',
         sucesso: null,
       });
     }
@@ -171,18 +171,18 @@ async function verStatus(req, res) {
       });
     }
 
-    const pedido = await accessRequestModel.findLatestByPerson(person.id);
+    const pedido = await accessRequestModel.findLatestByPerson(person.id, 'access');
     if (!pedido) {
       return res.render('auth/status-pedido', {
         title: 'Status do pedido',
-        resultado: { status: 'nenhum' },
+        resultado: { status: 'nenhum', email },
         erro: null,
       });
     }
 
     res.render('auth/status-pedido', {
       title: 'Status do pedido',
-      resultado: { status: pedido.status },
+      resultado: { status: pedido.status, email },
       erro: null,
     });
   } catch (err) {

@@ -23,13 +23,21 @@
 
         <% if (resultado) { %>
           <% if (resultado.status === 'nenhum') { %>
-            <p class="alerta">Você ainda não fez nenhum pedido de acesso.</p>
+            <p class="alerta">Nenhum pedido de acesso encontrado para esse e-mail.</p>
+            <form method="POST" action="/acesso/solicitar" class="form" style="margin-top: 8px;">
+              <input type="hidden" name="email" value="<%= resultado.email %>">
+              <button type="submit" class="btn-secundario">Solicitar acesso agora</button>
+            </form>
           <% } else if (resultado.status === 'pending') { %>
             <p class="alerta">Seu pedido está <b>pendente</b>, aguardando análise do líder.</p>
           <% } else if (resultado.status === 'approved') { %>
             <p class="alerta alerta-sucesso">Seu pedido foi <b>aprovado</b>! Confira seu e-mail para criar sua senha.</p>
           <% } else if (resultado.status === 'denied') { %>
-            <p class="alerta alerta-erro">Acesso negado. Seu pedido não foi aprovado pelo líder. Você pode solicitar novamente.</p>
+            <p class="alerta alerta-erro">Acesso negado. Seu pedido não foi aprovado pelo líder.</p>
+            <form method="POST" action="/acesso/solicitar" class="form" style="margin-top: 8px;">
+              <input type="hidden" name="email" value="<%= resultado.email %>">
+              <button type="submit" class="btn-secundario">Solicitar acesso novamente</button>
+            </form>
           <% } %>
         <% } %>
 

@@ -17,7 +17,10 @@
           <% pedidosAcesso.forEach(pedido => { %>
             <li class="card-pedido">
               <div>
-                <strong><%= pedido.people.name %></strong><br>
+                <strong><%= pedido.people.name %></strong>
+                <span class="badge <%= pedido.people.verified ? 'badge-sucesso' : 'badge-pendente' %>" style="margin-left: 8px;">
+                  <%= pedido.people.verified ? 'e-mail verificado' : 'e-mail não verificado' %>
+                </span><br>
                 <span class="stat-mono"><%= pedido.people.email %></span><br>
                 <small>Pedido em <%= new Date(pedido.requested_at).toLocaleString('pt-BR') %></small>
               </div>

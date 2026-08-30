@@ -12,9 +12,11 @@
       <div class="auth-form-card">
         <span class="badge badge-sucesso" style="margin-bottom: 16px;">Cadastro concluído</span>
         <h1>Tudo certo, <%= pessoa.name.split(' ')[0] %>!</h1>
-        <p>Enviamos um e-mail de verificação para <b><%= pessoa.email %></b>. É necessário confirmar o e-mail para começar a receber comunicados.</p>
+        <p>Enviamos um e-mail de verificação para <b><%= pessoa.email %></b>. Confirme o e-mail para começar a receber comunicados.</p>
+        <p>Também já registramos um <b>pedido de acesso</b> ao painel em seu nome — não precisa solicitar de novo. Um líder vai avaliar e você pode acompanhar o andamento a qualquer momento.</p>
 
         <div class="auth-links">
+          <a href="/acesso/status">Ver status do meu pedido</a>
           <a href="/pessoas/nova">Cadastrar outra pessoa</a>
           <a href="/auth/login">Ir para o login</a>
         </div>
