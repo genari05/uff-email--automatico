@@ -67,23 +67,29 @@
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
               <h3>Nada por aqui ainda</h3>
-              <p>Conclusões, novas tarefas e lembretes enviados vão aparecer aqui, como uma conversa da equipe.</p>
+              <p>Conclusões, novas tarefas e lembretes enviados vão aparecer aqui, como um grupo da equipe.</p>
             </div>
           <% } else { %>
             <div class="mural-chat">
-              <% atividades.slice().reverse().forEach((a, i) => { %>
+              <% atividades.slice().reverse().forEach((a) => { %>
                 <%
-                  let corPonto = 'dot-primary';
-                  if (a.type === 'task_completed' || a.type === 'task_approved') corPonto = 'dot-sucesso';
-                  else if (a.type === 'reminder_sent') corPonto = 'dot-aviso';
-                  else if (a.type === 'task_denied') corPonto = 'dot-negado';
-                  const lado = i % 2 === 0 ? 'esquerda' : 'direita';
+                  const pessoaMural = a.people;
+                  const nomeMural = pessoaMural ? pessoaMural.name : 'Sistema';
+                  const inicial = nomeMural.charAt(0).toUpperCase();
+                  const classePapel = a.papel === 'leader' ? 'lider' : 'membro';
                 %>
-                <div class="mural-bubble <%= lado %>">
-                  <span class="mural-dot <%= corPonto %>"></span>
-                  <div>
-                    <%= a.message %>
-                    <small><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
+                <div class="mural-msg">
+                  <% if (pessoaMural && pessoaMural.avatar_url) { %>
+                    <img class="mural-avatar" src="<%= pessoaMural.avatar_url %>" alt="">
+                  <% } else { %>
+                    <div class="mural-avatar"><%= inicial %></div>
+                  <% } %>
+                  <div class="mural-msg-body">
+                    <div class="mural-bubble <%= classePapel %>">
+                      <span class="mural-nome"><%= nomeMural %></span>
+                      <%= a.message %>
+                      <small><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
+                    </div>
                   </div>
                 </div>
               <% }) %>

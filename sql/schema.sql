@@ -97,6 +97,7 @@ create table if not exists tasks (
   -- lembrete por e-mail (opcional, fica a critério de quem cria)
   send_reminder boolean not null default false,
   reminder_date date,
+  reminder_time text, -- formato 'HH:MM', opcional (padrão: 00:00 se em branco)
   reminder_type text check (reminder_type in ('template', 'custom')),
   reminder_template_id uuid references email_templates(id),
   reminder_subject text,

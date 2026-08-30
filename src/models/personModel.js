@@ -128,6 +128,18 @@ async function resetVerification(id, { token, expiresAt }) {
   return data;
 }
 
+async function updateAvatar(id, avatarUrl) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ avatar_url: avatarUrl })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 module.exports = {
   create,
   findByEmail,
@@ -140,4 +152,5 @@ module.exports = {
   remove,
   setVerificationToken,
   resetVerification,
+  updateAvatar,
 };

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Meu perfil' }) %>
+
+      <div class="app-content">
+        <div class="card" style="max-width: 480px;">
+          <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+          <% if (sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
+
+          <div style="display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom: 24px;">
+            <% if (pessoa.avatar_url) { %>
+              <img src="<%= pessoa.avatar_url %>" alt="Foto de <%= pessoa.name %>"
+                   style="width:96px; height:96px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 4px var(--color-surface-muted);">
+            <% } else { %>
+              <div style="width:96px; height:96px; border-radius:50%; background:var(--color-primary-soft); color:var(--color-primary);
+                          display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:700;
+                          font-family: var(--font-display); box-shadow:0 0 0 4px var(--color-surface-muted);">
+                <%= pessoa.name.charAt(0).toUpperCase() %>
+              </div>
+            <% } %>
+            <div style="text-align:center;">
+              <strong style="font-size:16px;"><%= pessoa.name %></strong><br>
+              <span class="stat-mono" style="font-size:12.5px;"><%= pessoa.email %></span><br>
+              <span class="badge <%= currentUser.role === 'leader' ? 'badge-lider' : '' %>" style="margin-top:6px;">
+                <%= currentUser.role === 'leader' ? 'Líder' : 'Membro' %>
+              </span>
+            </div>
+          </div>
+
+          <form method="POST" action="/perfil/foto" enctype="multipart/form-data" class="form" style="max-width:none;">
+            <label for="foto">Trocar foto de perfil</label>
+            <input type="file" id="foto" name="foto" accept="image/png, image/jpeg, image/webp" required>
+            <p style="font-size:12.5px; color:var(--color-text-muted); margin:0;">JPG, PNG ou WEBP, até 3MB.</p>
+            <button type="submit" style="margin-top:12px;">Enviar foto</button>
+          </form>
+
+          <hr>
+          <p><a href="/pessoas/<%= pessoa.id %>/editar">Editar nome ou e-mail</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

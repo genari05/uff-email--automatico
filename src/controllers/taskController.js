@@ -130,9 +130,10 @@ async function criarTarefa(req, res) {
     if (souLider) {
       // Líder atribuindo -> já ativa direto, sem precisar de aprovação
       await activityModel.log(
-        `${req.user.people.name} atribuiu a tarefa "${task.title}" para ${task.people.name}`,
+        `Recebeu a tarefa "${task.title}" de ${req.user.people.name}`,
         'task_created',
-        task.id
+        task.id,
+        task.responsible_person_id
       );
       await sendTaskAssignedEmail({
         to: task.people.email,
@@ -144,9 +145,10 @@ async function criarTarefa(req, res) {
     } else {
       // Membro atribuindo -> fica aguardando aprovação do líder
       await activityModel.log(
-        `${req.user.people.name} quer atribuir a tarefa "${task.title}" para ${task.people.name} (aguardando aprovação)`,
+        `Pediu para atribuir a tarefa "${task.title}" para ${task.people.name} (aguardando aprovação)`,
         'task_awaiting_approval',
-        task.id
+        task.id,
+        req.user.person_id
       );
       const leaders = await userModel.findLeaders();
       leaders.forEach((leader) => {
@@ -179,7 +181,14 @@ async function criarTarefa(req, res) {
 async function listarTarefas(req, res) {
   const tarefas = await taskModel.listVisible();
   const atividades = await activityModel.listRecent(30);
-  res.render('tasks/lista', { title: 'Tarefas', tarefas, atividades });
+
+  // Busca o papel (líder/membro) de cada pessoa que aparece no mural,
+  // pra colorir cada balão de mensagem (azul = membro, dourado = líder)
+  const idsUnicos = [...new Set(atividades.filter((a) => a.person_id).map((a) => a.person_id))];
+  const papeis = await userModel.findRolesByPersonIds(idsUnicos);
+  const atividadesComPapel = atividades.map((a) => ({ ...a, papel: papeis[a.person_id] || 'member' }));
+
+  res.render('tasks/lista', { title: 'Tarefas', tarefas, atividades: atividadesComPapel });
 }
 
 // GET /tarefas/minhas -> tarefas da pessoa logada
@@ -203,9 +212,10 @@ async function concluirTarefa(req, res) {
 
     const atualizada = await taskModel.markCompleted(id);
     await activityModel.log(
-      `${atualizada.people.name} concluiu a tarefa "${atualizada.title}"`,
+      `Concluiu a tarefa "${atualizada.title}"`,
       'task_completed',
-      atualizada.id
+      atualizada.id,
+      atualizada.responsible_person_id
     );
 
     res.redirect('/tarefas/minhas');
@@ -238,9 +248,10 @@ async function resolverAprovacao(req, res) {
 
     if (decisao === 'pending') {
       await activityModel.log(
-        `Tarefa "${atualizada.title}" para ${atualizada.people.name} foi aprovada`,
+        `Teve a tarefa "${atualizada.title}" aprovada`,
         'task_approved',
-        atualizada.id
+        atualizada.id,
+        atualizada.responsible_person_id
       );
       sendTaskAssignedEmail({
         to: atualizada.people.email,
@@ -251,9 +262,10 @@ async function resolverAprovacao(req, res) {
       }).catch((err) => console.error('Erro ao notificar aprovação de tarefa:', err.message));
     } else {
       await activityModel.log(
-        `Tarefa "${atualizada.title}" para ${atualizada.people.name} foi negada pelo líder`,
+        `Teve a tarefa "${atualizada.title}" (para ${atualizada.people.name}) negada pelo líder`,
         'task_denied',
-        atualizada.id
+        atualizada.id,
+        criador?.person_id || null
       );
       if (criador?.people?.email) {
         sendTaskDeniedEmail({

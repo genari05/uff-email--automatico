@@ -102,6 +102,26 @@ async function promoteToLeader(personId) {
   return data;
 }
 
+/**
+ * Busca o papel (líder/membro) de várias pessoas de uma vez, pelo
+ * person_id. Usado no mural pra colorir cada balão de mensagem.
+ * Retorna um objeto { personId: 'leader' | 'member' }.
+ */
+async function findRolesByPersonIds(personIds) {
+  if (!personIds || personIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('person_id, role')
+    .in('person_id', personIds);
+
+  if (error) throw error;
+
+  const mapa = {};
+  data.forEach((u) => { mapa[u.person_id] = u.role; });
+  return mapa;
+}
+
 async function findById(id) {
   const { data, error } = await supabase
     .from(TABLE)
@@ -123,4 +143,5 @@ module.exports = {
   findById,
   findLeaders,
   promoteToLeader,
+  findRolesByPersonIds,
 };

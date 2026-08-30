@@ -9,5 +9,6 @@ router.use('/acesso', require('./accessRequestRoutes'));
 router.use('/emails', require('./emailRoutes'));
 router.use('/tarefas', require('./taskRoutes'));
 router.use('/cron', require('./cronRoutes'));
+router.use('/perfil', require('./profileRoutes'));
 
 module.exports = router;

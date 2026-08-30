@@ -50,9 +50,10 @@ async function verificarLembretes() {
 
       await taskModel.markReminderSent(task.id);
       await activityModel.log(
-        `${task.people.name} recebeu o lembrete da tarefa "${task.title}"`,
+        `Recebeu o lembrete da tarefa "${task.title}"`,
         'reminder_sent',
-        task.id
+        task.id,
+        task.responsible_person_id
       );
       enviados += 1;
     } catch (err) {

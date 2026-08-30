@@ -32,13 +32,27 @@
                     <th>E-mail</th>
                     <th>Status</th>
                     <th>Cadastrado em</th>
-                    <% if (currentUser.role === 'leader') { %><th>Ações</th><% } %>
+                    <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   <% pessoas.forEach(p => { %>
+                    <% const souEu = p.id === currentUser.person_id; %>
+                    <% const souLider = currentUser.role === 'leader'; %>
                     <tr>
-                      <td data-label="Nome"><%= p.name %></td>
+                      <td data-label="Nome">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <% if (p.avatar_url) { %>
+                            <img src="<%= p.avatar_url %>" alt="" style="width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+                          <% } else { %>
+                            <div style="width:28px; height:28px; border-radius:50%; background:var(--color-primary-soft); color:var(--color-primary);
+                                        display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">
+                              <%= p.name.charAt(0).toUpperCase() %>
+                            </div>
+                          <% } %>
+                          <span><%= p.name %><% if (souEu) { %> <span class="badge badge-lider">você</span><% } %></span>
+                        </div>
+                      </td>
                       <td data-label="E-mail"><span class="stat-mono"><%= p.email %></span></td>
                       <td data-label="Status">
                         <span class="badge <%= p.verified ? 'badge-sucesso' : 'badge-pendente' %>">
@@ -46,11 +60,12 @@
                         </span>
                       </td>
                       <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR') %></span></td>
-                      <% if (currentUser.role === 'leader') { %>
-                        <td data-label="Ações">
+                      <td data-label="Ações">
+                        <% if (souLider || souEu) { %>
                           <div style="display:flex; gap:6px; flex-wrap:wrap;">
                             <a href="/pessoas/<%= p.id %>/editar" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Editar</a>
-                            <% if (!p.verified) { %>
+
+                            <% if (souLider && !p.verified) { %>
                               <form method="POST" action="/pessoas/<%= p.id %>/reenviar-verificacao" style="display:inline">
                                 <button type="submit" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Reenviar e-mail</button>
                               </form>
@@ -58,12 +73,15 @@
                                 <button type="submit" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Marcar verificado</button>
                               </form>
                             <% } %>
+
                             <form method="POST" action="/pessoas/<%= p.id %>/excluir" class="form-excluir-pessoa" style="display:inline">
                               <button type="submit" class="btn-nao" style="padding:5px 10px; font-size:12px;">Excluir</button>
                             </form>
                           </div>
-                        </td>
-                      <% } %>
+                        <% } else { %>
+                          <span style="color:var(--color-text-muted); font-size:12.5px;">—</span>
+                        <% } %>
+                      </td>
                     </tr>
                   <% }) %>
                 </tbody>
