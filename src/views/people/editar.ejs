@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Editar pessoa' }) %>
+
+      <div class="app-content">
+        <div class="card" style="max-width: 480px;">
+          <a href="/pessoas" class="voltar-link">← Voltar para a lista</a>
+
+          <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+
+          <form method="POST" action="/pessoas/<%= pessoa.id %>/editar" class="form" style="max-width:none;">
+            <label for="name">Nome completo</label>
+            <input type="text" id="name" name="name" value="<%= pessoa.name %>" required>
+
+            <label for="email">E-mail institucional</label>
+            <input type="email" id="email" name="email" value="<%= pessoa.email %>" required>
+
+            <% if (pessoa.email !== undefined) { %>
+              <p style="font-size:12.5px; color:var(--color-text-muted); margin: 0;">
+                Trocar o e-mail não reenvia a verificação automaticamente. Use "Reenviar e-mail" na lista se precisar.
+              </p>
+            <% } %>
+
+            <button type="submit" style="margin-top:16px;">Salvar alterações</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

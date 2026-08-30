@@ -744,6 +744,19 @@ details .form { margin-top: 16px; }
   color: var(--color-text-muted);
 }
 
+/* Link de voltar, usado em telas de formulário */
+.voltar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.voltar-link:hover { color: var(--color-primary); }
+
 /* =========================================================
    MURAL DE ATIVIDADES — formato de conversa (balões, tipo WhatsApp)
    ========================================================= */

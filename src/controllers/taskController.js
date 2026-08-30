@@ -140,7 +140,7 @@ async function criarTarefa(req, res) {
         title: task.title,
         description: task.description,
         deadlineDate: new Date(task.deadline_date).toLocaleDateString('pt-BR'),
-      });
+      }).catch((err) => console.error('Erro ao notificar responsável pela tarefa:', err.message));
     } else {
       // Membro atribuindo -> fica aguardando aprovação do líder
       await activityModel.log(
@@ -149,16 +149,14 @@ async function criarTarefa(req, res) {
         task.id
       );
       const leaders = await userModel.findLeaders();
-      await Promise.allSettled(
-        leaders.map((leader) =>
-          sendTaskAwaitingApprovalEmail({
-            to: leader.people.email,
-            creatorName: req.user.people.name,
-            responsibleName: task.people.name,
-            title: task.title,
-          })
-        )
-      );
+      leaders.forEach((leader) => {
+        sendTaskAwaitingApprovalEmail({
+          to: leader.people.email,
+          creatorName: req.user.people.name,
+          responsibleName: task.people.name,
+          title: task.title,
+        }).catch((err) => console.error('Erro ao notificar líder sobre tarefa:', err.message));
+      });
     }
 
     res.redirect('/tarefas');
@@ -244,13 +242,13 @@ async function resolverAprovacao(req, res) {
         'task_approved',
         atualizada.id
       );
-      await sendTaskAssignedEmail({
+      sendTaskAssignedEmail({
         to: atualizada.people.email,
         name: atualizada.people.name,
         title: atualizada.title,
         description: atualizada.description,
         deadlineDate: new Date(atualizada.deadline_date).toLocaleDateString('pt-BR'),
-      });
+      }).catch((err) => console.error('Erro ao notificar aprovação de tarefa:', err.message));
     } else {
       await activityModel.log(
         `Tarefa "${atualizada.title}" para ${atualizada.people.name} foi negada pelo líder`,
@@ -258,12 +256,12 @@ async function resolverAprovacao(req, res) {
         atualizada.id
       );
       if (criador?.people?.email) {
-        await sendTaskDeniedEmail({
+        sendTaskDeniedEmail({
           to: criador.people.email,
           creatorName: criador.people.name,
           responsibleName: atualizada.people.name,
           title: atualizada.title,
-        });
+        }).catch((err) => console.error('Erro ao notificar negação de tarefa:', err.message));
       }
     }
 

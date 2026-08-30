@@ -43,17 +43,25 @@ async function criarPessoa(req, res) {
 
     // Cria automaticamente o pedido de acesso, pra pessoa não precisar
     // fazer isso manualmente depois. Fica pendente até o líder aprovar
-    // (e o ideal é o líder esperar a pessoa confirmar o e-mail antes).
+    // (o líder pode aprovar mesmo antes da pessoa confirmar o e-mail,
+    // ou usar "reenviar verificação" / "marcar como verificado" se o
+    // e-mail original não chegar).
     await accessRequestModel.create(person.id, 'access');
 
-    const leaders = await userModel.findLeaders();
-    await Promise.allSettled(
-      leaders.map((leader) =>
-        sendNewAccessRequestEmail({ to: leader.people.email, requesterName: person.name })
-      )
-    );
+    // IMPORTANTE: os e-mails abaixo são disparados SEM esperar a resposta
+    // (sem "await") - isso evita que o cadastro fique lento esperando o
+    // Gmail confirmar o envio. Erros de envio só aparecem no log do servidor.
+    userModel.findLeaders().then((leaders) => {
+      leaders.forEach((leader) => {
+        sendNewAccessRequestEmail({ to: leader.people.email, requesterName: person.name }).catch((err) =>
+          console.error('Erro ao notificar líder sobre novo pedido:', err.message)
+        );
+      });
+    }).catch((err) => console.error('Erro ao buscar líderes:', err.message));
 
-    await sendVerificationEmail({ to: person.email, name: person.name, token });
+    sendVerificationEmail({ to: person.email, name: person.name, token }).catch((err) =>
+      console.error('Erro ao enviar e-mail de verificação:', err.message)
+    );
 
     res.render('people/sucesso', {
       title: 'Cadastro realizado',
@@ -86,7 +94,7 @@ async function verificarEmail(req, res) {
       return res.render('people/verificacao', {
         title: 'Link expirado',
         sucesso: false,
-        mensagem: 'Esse link de verificação expirou. Peça um novo cadastro.',
+        mensagem: 'Esse link de verificação expirou. Peça pro líder reenviar ou marcar como verificado.',
       });
     }
 
@@ -111,11 +119,126 @@ async function verificarEmail(req, res) {
 async function listarPessoas(req, res) {
   try {
     const pessoas = await personModel.listAll();
-    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas });
+    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas, erro: null, sucesso: null });
   } catch (err) {
     console.error(err);
-    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [] });
+    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [], erro: null, sucesso: null });
   }
 }
 
-module.exports = { formNovaPessoa, criarPessoa, verificarEmail, listarPessoas };
+// GET /pessoas/:id/editar
+async function formEditarPessoa(req, res) {
+  const pessoa = await personModel.findById(req.params.id);
+  if (!pessoa) return res.redirect('/pessoas');
+  res.render('people/editar', { title: 'Editar pessoa', pessoa, erro: null });
+}
+
+// POST /pessoas/:id/editar
+async function editarPessoa(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, email } = req.body;
+    const pessoa = await personModel.findById(id);
+    if (!pessoa) return res.redirect('/pessoas');
+
+    if (!name || !email) {
+      return res.render('people/editar', {
+        title: 'Editar pessoa',
+        pessoa,
+        erro: 'Preencha nome e e-mail.',
+      });
+    }
+
+    const emailNormalizado = email.toLowerCase().trim();
+    const emailMudou = emailNormalizado !== pessoa.email;
+
+    if (emailMudou) {
+      const existente = await personModel.findByEmail(emailNormalizado);
+      if (existente) {
+        return res.render('people/editar', {
+          title: 'Editar pessoa',
+          pessoa,
+          erro: 'Já existe outra pessoa cadastrada com esse e-mail.',
+        });
+      }
+    }
+
+    await personModel.update(id, { name: name.trim(), email: emailNormalizado });
+
+    // Se o e-mail mudou, a verificação antiga não vale mais - precisa
+    // confirmar de novo pra garantir que o novo e-mail é válido.
+    if (emailMudou) {
+      const token = generateToken();
+      await personModel.resetVerification(id, { token, expiresAt: expiresInHours(24) });
+      sendVerificationEmail({ to: emailNormalizado, name: name.trim(), token }).catch((err) =>
+        console.error('Erro ao reenviar verificação após edição:', err.message)
+      );
+    }
+
+    res.redirect('/pessoas');
+  } catch (err) {
+    console.error(err);
+    const pessoa = await personModel.findById(req.params.id);
+    res.render('people/editar', { title: 'Editar pessoa', pessoa, erro: 'Erro ao salvar. Tente novamente.' });
+  }
+}
+
+// POST /pessoas/:id/excluir -> remove a pessoa (e em cascata: usuário,
+// pedidos de acesso e tarefas dela, por causa das foreign keys do banco)
+async function excluirPessoa(req, res) {
+  try {
+    await personModel.remove(req.params.id);
+  } catch (err) {
+    console.error(err);
+  }
+  res.redirect('/pessoas');
+}
+
+// POST /pessoas/:id/reenviar-verificacao -> gera novo token e reenvia o e-mail
+async function reenviarVerificacao(req, res) {
+  try {
+    const pessoa = await personModel.findById(req.params.id);
+    if (!pessoa) return res.redirect('/pessoas');
+
+    const token = generateToken();
+    await personModel.setVerificationToken(pessoa.id, { token, expiresAt: expiresInHours(24) });
+
+    sendVerificationEmail({ to: pessoa.email, name: pessoa.name, token }).catch((err) =>
+      console.error('Erro ao reenviar e-mail de verificação:', err.message)
+    );
+
+    const pessoas = await personModel.listAll();
+    res.render('people/lista', {
+      title: 'Pessoas cadastradas',
+      pessoas,
+      erro: null,
+      sucesso: `E-mail de verificação reenviado para ${pessoa.name}.`,
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect('/pessoas');
+  }
+}
+
+// POST /pessoas/:id/marcar-verificado -> escape hatch: se o e-mail nunca
+// chegar por algum motivo, o líder pode confirmar manualmente
+async function marcarVerificadoManualmente(req, res) {
+  try {
+    await personModel.markAsVerified(req.params.id);
+  } catch (err) {
+    console.error(err);
+  }
+  res.redirect('/pessoas');
+}
+
+module.exports = {
+  formNovaPessoa,
+  criarPessoa,
+  verificarEmail,
+  listarPessoas,
+  formEditarPessoa,
+  editarPessoa,
+  excluirPessoa,
+  reenviarVerificacao,
+  marcarVerificadoManualmente,
+};

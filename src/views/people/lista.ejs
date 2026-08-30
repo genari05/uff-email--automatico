@@ -9,39 +9,80 @@
       <%- include('../partials/app-topbar', { pageTitle: 'Pessoas cadastradas' }) %>
 
       <div class="app-content">
-        <p><a href="/pessoas/nova">+ Cadastrar nova pessoa</a></p>
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom: 16px;">
+            <p style="margin:0;"><a href="/pessoas/nova">+ Cadastrar nova pessoa</a></p>
+          </div>
 
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>Status</th>
-                <th>Cadastrado em</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% pessoas.forEach(p => { %>
-                <tr>
-                  <td data-label="Nome"><%= p.name %></td>
-                  <td data-label="E-mail"><span class="stat-mono"><%= p.email %></span></td>
-                  <td data-label="Status">
-                    <span class="badge <%= p.verified ? 'badge-sucesso' : 'badge-pendente' %>">
-                      <%= p.verified ? 'Verificado' : 'Pendente' %>
-                    </span>
-                  </td>
-                  <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR') %></span></td>
-                </tr>
-              <% }) %>
-              <% if (pessoas.length === 0) { %>
-                <tr><td colspan="4">Nenhuma pessoa cadastrada ainda.</td></tr>
-              <% } %>
-            </tbody>
-          </table>
+          <% if (typeof erro !== 'undefined' && erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+          <% if (typeof sucesso !== 'undefined' && sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
+
+          <% if (pessoas.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma pessoa cadastrada ainda</h3>
+              <p>Cadastre a primeira pessoa pra começar a montar sua lista de destinatários.</p>
+            </div>
+          <% } else { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Status</th>
+                    <th>Cadastrado em</th>
+                    <% if (currentUser.role === 'leader') { %><th>Ações</th><% } %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% pessoas.forEach(p => { %>
+                    <tr>
+                      <td data-label="Nome"><%= p.name %></td>
+                      <td data-label="E-mail"><span class="stat-mono"><%= p.email %></span></td>
+                      <td data-label="Status">
+                        <span class="badge <%= p.verified ? 'badge-sucesso' : 'badge-pendente' %>">
+                          <%= p.verified ? 'Verificado' : 'Pendente' %>
+                        </span>
+                      </td>
+                      <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR') %></span></td>
+                      <% if (currentUser.role === 'leader') { %>
+                        <td data-label="Ações">
+                          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <a href="/pessoas/<%= p.id %>/editar" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Editar</a>
+                            <% if (!p.verified) { %>
+                              <form method="POST" action="/pessoas/<%= p.id %>/reenviar-verificacao" style="display:inline">
+                                <button type="submit" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Reenviar e-mail</button>
+                              </form>
+                              <form method="POST" action="/pessoas/<%= p.id %>/marcar-verificado" style="display:inline">
+                                <button type="submit" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Marcar verificado</button>
+                              </form>
+                            <% } %>
+                            <form method="POST" action="/pessoas/<%= p.id %>/excluir" class="form-excluir-pessoa" style="display:inline">
+                              <button type="submit" class="btn-nao" style="padding:5px 10px; font-size:12px;">Excluir</button>
+                            </form>
+                          </div>
+                        </td>
+                      <% } %>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
         </div>
       </div>
     </div>
   </div>
+
+  <script>
+    document.querySelectorAll('.form-excluir-pessoa').forEach((form) => {
+      form.addEventListener('submit', (e) => {
+        if (!confirm('Excluir essa pessoa remove também o acesso dela ao sistema, os pedidos e as tarefas atribuídas a ela. Essa ação não pode ser desfeita. Continuar?')) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

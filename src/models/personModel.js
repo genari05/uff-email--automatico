@@ -73,6 +73,61 @@ async function findManyByIds(ids) {
   return data;
 }
 
+async function update(id, { name, email }) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ name, email })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function remove(id) {
+  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  if (error) throw error;
+}
+
+/**
+ * Gera um novo token de verificação (usado no "reenviar verificação",
+ * já que o token antigo pode ter expirado ou o e-mail nunca ter chegado).
+ */
+async function setVerificationToken(id, { token, expiresAt }) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ verification_token: token, verification_expires: expiresAt })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Usado quando o e-mail de uma pessoa é editado: a verificação antiga
+ * não vale mais pro e-mail novo, então volta pra "pendente" com um
+ * novo token.
+ */
+async function resetVerification(id, { token, expiresAt }) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({
+      verified: false,
+      verified_at: null,
+      verification_token: token,
+      verification_expires: expiresAt,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 module.exports = {
   create,
   findByEmail,
@@ -81,4 +136,8 @@ module.exports = {
   markAsVerified,
   listAll,
   findManyByIds,
+  update,
+  remove,
+  setVerificationToken,
+  resetVerification,
 };

@@ -60,11 +60,11 @@ async function solicitar(req, res) {
     await accessRequestModel.create(person.id, 'access');
 
     const leaders = await userModel.findLeaders();
-    await Promise.allSettled(
-      leaders.map((leader) =>
-        sendNewAccessRequestEmail({ to: leader.people.email, requesterName: person.name })
-      )
-    );
+    leaders.forEach((leader) => {
+      sendNewAccessRequestEmail({ to: leader.people.email, requesterName: person.name }).catch((err) =>
+        console.error('Erro ao notificar líder:', err.message)
+      );
+    });
 
     res.render('auth/solicitar-acesso', {
       title: 'Solicitar acesso',
@@ -132,11 +132,11 @@ async function solicitarLider(req, res) {
     await accessRequestModel.create(req.user.person_id, 'leader');
 
     const leaders = await userModel.findLeaders();
-    await Promise.allSettled(
-      leaders.map((leader) =>
-        sendNewLeaderRequestEmail({ to: leader.people.email, requesterName: req.user.people.name })
-      )
-    );
+    leaders.forEach((leader) => {
+      sendNewLeaderRequestEmail({ to: leader.people.email, requesterName: req.user.people.name }).catch((err) =>
+        console.error('Erro ao notificar líder:', err.message)
+      );
+    });
 
     res.render('auth/solicitar-lider', {
       title: 'Virar líder',
@@ -226,11 +226,11 @@ async function resolver(req, res) {
         password_set_token: token,
         password_set_expires: expiresInHours(24),
       });
-      await sendAccessApprovedEmail({
+      sendAccessApprovedEmail({
         to: pedido.people.email,
         name: pedido.people.name,
         token,
-      });
+      }).catch((err) => console.error('Erro ao enviar e-mail de aprovação:', err.message));
     }
 
     if (decisao === 'approved' && pedido.request_type === 'leader') {
