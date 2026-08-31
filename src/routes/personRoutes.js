@@ -19,9 +19,9 @@ router.get('/:id/editar', requireAuth, requireOwnerOrLeader, personController.fo
 router.post('/:id/editar', requireAuth, requireOwnerOrLeader, personController.editarPessoa);
 router.post('/:id/excluir', requireAuth, requireOwnerOrLeader, personController.excluirPessoa);
 
-// Reenviar verificação / marcar verificado: só o líder (é uma ação
-// administrativa sobre o cadastro de outra pessoa).
+// Reenviar verificação: só o líder (é uma ação administrativa sobre
+// o cadastro de outra pessoa). A confirmação em si só acontece pelo
+// link do e-mail - não existe mais um jeito manual de "forçar".
 router.post('/:id/reenviar-verificacao', requireAuth, requireLeader, personController.reenviarVerificacao);
-router.post('/:id/marcar-verificado', requireAuth, requireLeader, personController.marcarVerificadoManualmente);
 
 module.exports = router;

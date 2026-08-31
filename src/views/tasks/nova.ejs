@@ -10,6 +10,7 @@
 
       <div class="app-content">
         <div class="card" style="max-width: 640px;">
+          <a href="/tarefas" class="voltar-link">← Voltar</a>
           <% if (currentUser.role !== 'leader') { %>
             <p class="alerta">Como você não é líder, essa tarefa vai ficar <b>aguardando aprovação</b> antes de valer pra pessoa responsável.</p>
           <% } %>

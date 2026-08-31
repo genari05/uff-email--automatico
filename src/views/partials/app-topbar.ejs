@@ -1,11 +1,56 @@
 <div class="app-topbar">
-  <h1><%= typeof pageTitle !== 'undefined' ? pageTitle : title %></h1>
-
-  <a href="/perfil" class="topbar-avatar-link" title="Meu perfil">
-    <% if (currentUser.people.avatar_url) { %>
-      <img src="<%= currentUser.people.avatar_url %>" alt="" class="topbar-avatar">
-    <% } else { %>
-      <div class="topbar-avatar topbar-avatar-fallback"><%= currentUser.people.name.charAt(0).toUpperCase() %></div>
+  <div>
+    <h1><%= typeof pageTitle !== 'undefined' ? pageTitle : title %></h1>
+    <% if (typeof ala !== 'undefined' && ala) { %>
+      <span class="ala-tag">Ala <%= ala.figura %></span>
     <% } %>
-  </a>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:14px;">
+    <% if (typeof ala !== 'undefined' && ala) { %>
+      <button type="button" class="ajuda-btn" id="btnReabrirTutorial" title="O que é essa página?">?</button>
+    <% } %>
+    <a href="/perfil" class="topbar-avatar-link" title="Meu perfil">
+      <% if (currentUser.people.avatar_url) { %>
+        <img src="<%= currentUser.people.avatar_url %>" alt="" class="topbar-avatar">
+      <% } else { %>
+        <div class="topbar-avatar topbar-avatar-fallback"><%= currentUser.people.name.charAt(0).toUpperCase() %></div>
+      <% } %>
+    </a>
+  </div>
 </div>
+
+<% if (typeof ala !== 'undefined' && ala) { %>
+  <img src="/img/figuras/<%= ala.slug %>-fundo.png" alt="" class="ala-bg-figura"
+       onerror="this.style.display='none';">
+
+  <div class="tutorial-overlay" id="tutorialOverlay" hidden>
+    <div class="tutorial-box">
+      <div class="tutorial-figura">
+        <img src="/img/figuras/<%= ala.slug %>.png" alt="" class="tutorial-figura-img"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="tutorial-figura-fallback" style="display:none;">Ψ</div>
+      </div>
+      <h3><%= ala.saudacao %>, <%= currentUser.people.name.split(' ')[0] %>!</h3>
+      <p><%= ala.explicacao %></p>
+      <button type="button" id="btnFecharTutorial">Entendi!</button>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var CHAVE = 'tutorial_visto_<%= ala.path %>';
+      var overlay = document.getElementById('tutorialOverlay');
+      var btnFechar = document.getElementById('btnFecharTutorial');
+      var btnReabrir = document.getElementById('btnReabrirTutorial');
+
+      function abrir() { overlay.hidden = false; }
+      function fechar() { overlay.hidden = true; localStorage.setItem(CHAVE, '1'); }
+
+      if (!localStorage.getItem(CHAVE)) abrir();
+
+      btnFechar.addEventListener('click', fechar);
+      btnReabrir.addEventListener('click', abrir);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) fechar(); });
+    })();
+  </script>
+<% } %>

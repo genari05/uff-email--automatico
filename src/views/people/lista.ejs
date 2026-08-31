@@ -58,22 +58,17 @@
                         <span class="badge <%= p.verified ? 'badge-sucesso' : 'badge-pendente' %>">
                           <%= p.verified ? 'Verificado' : 'Pendente' %>
                         </span>
+                        <% if (currentUser.role === 'leader' && !p.verified) { %>
+                          <form method="POST" action="/pessoas/<%= p.id %>/reenviar-verificacao" style="display:inline;">
+                            <button type="submit" class="btn-link-inline">Reenviar e-mail</button>
+                          </form>
+                        <% } %>
                       </td>
                       <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR') %></span></td>
                       <td data-label="Ações">
                         <% if (souLider || souEu) { %>
-                          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                          <div style="display:flex; gap:6px;">
                             <a href="/pessoas/<%= p.id %>/editar" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Editar</a>
-
-                            <% if (souLider && !p.verified) { %>
-                              <form method="POST" action="/pessoas/<%= p.id %>/reenviar-verificacao" style="display:inline">
-                                <button type="submit" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Reenviar e-mail</button>
-                              </form>
-                              <form method="POST" action="/pessoas/<%= p.id %>/marcar-verificado" style="display:inline">
-                                <button type="submit" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Marcar verificado</button>
-                              </form>
-                            <% } %>
-
                             <form method="POST" action="/pessoas/<%= p.id %>/excluir" class="form-excluir-pessoa" style="display:inline">
                               <button type="submit" class="btn-nao" style="padding:5px 10px; font-size:12px;">Excluir</button>
                             </form>

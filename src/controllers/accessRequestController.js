@@ -204,6 +204,9 @@ async function listarPendentes(req, res) {
     title: 'Pedidos de acesso',
     pedidosAcesso,
     pedidosLider,
+    erro: req.query.erro === 'nao_verificado'
+      ? 'Esse e-mail ainda não foi verificado. Não é possível aprovar o acesso até a pessoa confirmar o e-mail.'
+      : null,
   });
 }
 
@@ -215,6 +218,12 @@ async function resolver(req, res) {
 
     const pedido = await accessRequestModel.findById(id);
     if (!pedido) return res.redirect('/acesso/pendentes');
+
+    // REGRA: não dá pra aprovar acesso de um e-mail que ainda não foi
+    // confirmado - a verificação é sempre pelo link do e-mail, nunca manual.
+    if (decisao === 'approved' && pedido.request_type === 'access' && !pedido.people.verified) {
+      return res.redirect('/acesso/pendentes?erro=nao_verificado');
+    }
 
     await accessRequestModel.resolve(id, { status: decisao, resolvedBy: req.user.id });
 

@@ -11,6 +11,9 @@
       <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
         <div class="card">
           <h2 style="margin-top:0;">Pedidos de acesso ao sistema</h2>
+
+          <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+
           <% if (pedidosAcesso.length === 0) { %>
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
@@ -30,10 +33,19 @@
                     <small>Pedido em <%= new Date(pedido.requested_at).toLocaleString('pt-BR') %></small>
                   </div>
                   <div class="acoes-pedido">
-                    <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
-                      <input type="hidden" name="decisao" value="approved">
-                      <button type="submit" class="btn-sim">Aprovar</button>
-                    </form>
+                    <% if (pedido.people.verified) { %>
+                      <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
+                        <input type="hidden" name="decisao" value="approved">
+                        <button type="submit" class="btn-sim">Aprovar</button>
+                      </form>
+                    <% } else { %>
+                      <span class="btn-locked" title="Aguardando a pessoa confirmar o e-mail">
+                        🔒 Aguardando e-mail
+                      </span>
+                      <form method="POST" action="/pessoas/<%= pedido.people.id %>/reenviar-verificacao" style="display:inline">
+                        <button type="submit" class="btn-secundario" style="padding:6px 10px; font-size:12px;">Reenviar e-mail</button>
+                      </form>
+                    <% } %>
                     <form method="POST" action="/acesso/<%= pedido.id %>/resolver" style="display:inline">
                       <input type="hidden" name="decisao" value="denied">
                       <button type="submit" class="btn-nao">Negar</button>
