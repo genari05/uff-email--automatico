@@ -1,9 +1,6 @@
 <div class="app-topbar">
   <div>
     <h1><%= typeof pageTitle !== 'undefined' ? pageTitle : title %></h1>
-    <% if (typeof ala !== 'undefined' && ala) { %>
-      <span class="ala-tag">Ala <%= ala.figura %></span>
-    <% } %>
   </div>
 
   <div style="display:flex; align-items:center; gap:14px;">
@@ -21,6 +18,10 @@
 </div>
 
 <% if (typeof ala !== 'undefined' && ala) { %>
+  <div class="ala-banner">
+    <span class="ala-banner-texto">Ala <em><%= ala.figura %></em></span>
+  </div>
+
   <img src="/img/figuras/<%= ala.slug %>-fundo.png" alt="" class="ala-bg-figura"
        onerror="this.style.display='none';">
 

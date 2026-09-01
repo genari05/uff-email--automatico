@@ -42,14 +42,19 @@
             </label>
 
             <div id="camposLembrete" style="display:none; margin-top: 12px;">
-              <label for="reminderDate">Data do lembrete</label>
-              <input type="date" id="reminderDate" name="reminderDate" min="<%= today %>">
+              <div class="campo-data-hora">
+                <div>
+                  <label for="reminderDate">Data do lembrete</label>
+                  <input type="date" id="reminderDate" name="reminderDate" min="<%= today %>">
+                </div>
+                <div>
+                  <label for="reminderTime">Horário <span class="opcional-tag">opcional</span></label>
+                  <input type="time" id="reminderTime" name="reminderTime">
+                </div>
+              </div>
+              <small style="color: var(--color-text-muted); display: block; margin-top: 6px;">Se deixar o horário em branco, o lembrete é enviado à meia-noite (00:00) do dia marcado.</small>
 
-              <label for="reminderTime">Horário do lembrete (opcional)</label>
-              <input type="time" id="reminderTime" name="reminderTime">
-              <small style="color: var(--color-text-muted);">Se deixar em branco, o lembrete é enviado à meia-noite (00:00) do dia marcado.</small>
-
-              <label for="reminderType">Tipo de e-mail do lembrete</label>
+              <label for="reminderType" style="margin-top: 14px;">Tipo de e-mail do lembrete</label>
               <select id="reminderType" name="reminderType">
                 <option value="custom">Escrever um e-mail personalizado</option>
                 <option value="template">Usar um modelo pronto</option>

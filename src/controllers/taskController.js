@@ -12,8 +12,10 @@ const {
 
 // GET /tarefas/nova
 async function formNovaTarefa(req, res) {
-  const pessoas = await personModel.listAll({ onlyVerified: true });
-  const templates = await emailModel.listTemplates();
+  const [pessoas, templates] = await Promise.all([
+    personModel.listAll({ onlyVerified: true }),
+    emailModel.listTemplates(),
+  ]);
   const today = new Date().toISOString().slice(0, 10);
   res.render('tasks/nova', { title: 'Nova tarefa', erro: null, pessoas, templates, today });
 }
@@ -35,8 +37,10 @@ async function criarTarefa(req, res) {
       reminderBody,
     } = req.body;
 
-    const pessoas = await personModel.listAll({ onlyVerified: true });
-    const templates = await emailModel.listTemplates();
+    const [pessoas, templates] = await Promise.all([
+      personModel.listAll({ onlyVerified: true }),
+      emailModel.listTemplates(),
+    ]);
     const today = new Date().toISOString().slice(0, 10);
 
     if (!responsibleId || !title || !deadlineDate) {
@@ -164,8 +168,10 @@ async function criarTarefa(req, res) {
     res.redirect('/tarefas');
   } catch (err) {
     console.error(err);
-    const pessoas = await personModel.listAll({ onlyVerified: true });
-    const templates = await emailModel.listTemplates();
+    const [pessoas, templates] = await Promise.all([
+      personModel.listAll({ onlyVerified: true }),
+      emailModel.listTemplates(),
+    ]);
     const today = new Date().toISOString().slice(0, 10);
     res.render('tasks/nova', {
       title: 'Nova tarefa',
@@ -179,8 +185,10 @@ async function criarTarefa(req, res) {
 
 // GET /tarefas -> painel geral da equipe
 async function listarTarefas(req, res) {
-  const tarefas = await taskModel.listVisible();
-  const atividades = await activityModel.listRecent(30);
+  const [tarefas, atividades] = await Promise.all([
+    taskModel.listVisible(),
+    activityModel.listRecent(30),
+  ]);
 
   // Busca o papel (líder/membro) de cada pessoa que aparece no mural,
   // pra colorir cada balão de mensagem (azul = membro, dourado = líder)

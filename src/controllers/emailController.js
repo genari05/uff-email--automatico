@@ -31,10 +31,10 @@ async function formCompor(req, res) {
   const ids = (req.query.ids || '').split(',').filter(Boolean);
   const templateId = req.query.template || null;
 
-  let template = null;
-  if (templateId) template = await emailModel.findTemplateById(templateId);
-
-  const pessoas = await personModel.findManyByIds(ids);
+  const [template, pessoas] = await Promise.all([
+    templateId ? emailModel.findTemplateById(templateId) : Promise.resolve(null),
+    personModel.findManyByIds(ids),
+  ]);
 
   res.render('dashboard/compor-email', {
     title: 'Compor e-mail',

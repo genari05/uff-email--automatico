@@ -6,16 +6,23 @@ const { sendVerificationEmail, sendNewAccessRequestEmail } = require('../service
 
 // GET /pessoas/nova -> formulário de cadastro
 function formNovaPessoa(req, res) {
+  if (req.user) {
+    // Já logado -> fica dentro da área interna (com sidebar), não parece
+    // que "voltou pro login".
+    return res.render('people/form-interna', { title: 'Cadastrar pessoa', erro: null });
+  }
   res.render('people/form', { title: 'Cadastrar pessoa', erro: null });
 }
 
 // POST /pessoas -> cria pessoa + dispara e-mail de verificação
 async function criarPessoa(req, res) {
+  const view = req.user ? 'people/form-interna' : 'people/form';
+
   try {
     const { name, email } = req.body;
 
     if (!name || !email) {
-      return res.render('people/form', {
+      return res.render(view, {
         title: 'Cadastrar pessoa',
         erro: 'Preencha nome e e-mail.',
       });
@@ -23,7 +30,7 @@ async function criarPessoa(req, res) {
 
     const existente = await personModel.findByEmail(email.toLowerCase().trim());
     if (existente) {
-      return res.render('people/form', {
+      return res.render(view, {
         title: 'Cadastrar pessoa',
         erro: 'Já existe uma pessoa cadastrada com esse e-mail.',
       });
@@ -63,13 +70,24 @@ async function criarPessoa(req, res) {
       console.error('Erro ao enviar e-mail de verificação:', err.message)
     );
 
+    if (req.user) {
+      // Logado -> fica na área interna, mostra a lista com aviso de sucesso
+      const pessoas = await personModel.listAll();
+      return res.render('people/lista', {
+        title: 'Pessoas cadastradas',
+        pessoas,
+        erro: null,
+        sucesso: `${person.name} foi cadastrado(a) e já recebeu o e-mail de verificação.`,
+      });
+    }
+
     res.render('people/sucesso', {
       title: 'Cadastro realizado',
       pessoa: person,
     });
   } catch (err) {
     console.error(err);
-    res.render('people/form', {
+    res.render(view, {
       title: 'Cadastrar pessoa',
       erro: 'Erro ao cadastrar. Tente novamente.',
     });
