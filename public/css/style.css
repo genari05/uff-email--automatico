@@ -558,6 +558,49 @@ button:hover, .btn-primary:hover {
 
 .sidebar-nav svg { flex-shrink: 0; width: 17px; height: 17px; }
 
+/* =========================================================
+   MANCHA DE RORSCHACH — decoração animada no vão vazio da
+   sidebar, sempre simétrica (como as manchas de verdade),
+   mudando de forma bem devagar
+   ========================================================= */
+.sidebar-blot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  padding: 12px 20px;
+}
+
+.blot-svg {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  overflow: visible;
+}
+
+.blot-path {
+  fill: rgba(234, 240, 255, 0.16);
+  opacity: 0;
+  animation: blot-cycle 14s ease-in-out infinite;
+}
+.blot-b { animation-delay: -4.7s; }
+.blot-c { animation-delay: -9.3s; }
+
+@keyframes blot-cycle {
+  0%, 6%   { opacity: 0; }
+  16%, 26% { opacity: 1; }
+  36%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blot-path { animation: none; opacity: 0.5; }
+}
+
+@media (max-width: 860px) {
+  .sidebar-blot { display: none; }
+}
+
 .sidebar-footer {
   border-top: 1px solid rgba(255,255,255,0.1);
   padding-top: 16px;
@@ -586,7 +629,7 @@ button:hover, .btn-primary:hover {
   flex: 1;
   min-width: 0;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Ctext x='10' y='70' font-family='Georgia,serif' font-size='46' fill='%231B4FE0' opacity='0.04' transform='rotate(-14 10 70)'%3E%CE%A8%3C/text%3E%3Ctext x='150' y='170' font-family='Georgia,serif' font-size='34' fill='%230A1F44' opacity='0.035' transform='rotate(10 150 170)'%3E%CE%A8%3C/text%3E%3Ctext x='60' y='235' font-family='Georgia,serif' font-size='24' fill='%2335C4E8' opacity='0.05' transform='rotate(-6 60 235)'%3E%CE%A8%3C/text%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Ctext x='10' y='70' font-family='Georgia,serif' font-size='48' fill='%231B4FE0' opacity='0.13' transform='rotate(-14 10 70)'%3E%CE%A8%3C/text%3E%3Ctext x='150' y='170' font-family='Georgia,serif' font-size='36' fill='%230A1F44' opacity='0.11' transform='rotate(10 150 170)'%3E%CE%A8%3C/text%3E%3Ctext x='60' y='235' font-family='Georgia,serif' font-size='26' fill='%2335C4E8' opacity='0.15' transform='rotate(-6 60 235)'%3E%CE%A8%3C/text%3E%3C/svg%3E");
   background-repeat: repeat;
 }
 
