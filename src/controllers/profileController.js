@@ -1,4 +1,6 @@
+const bcrypt = require('bcrypt');
 const personModel = require('../models/personModel');
+const userModel = require('../models/userModel');
 const { uploadAvatar } = require('../services/avatarService');
 
 // GET /perfil -> tela do próprio perfil
@@ -47,4 +49,59 @@ async function atualizarFoto(req, res) {
   }
 }
 
-module.exports = { verPerfil, atualizarFoto };
+// POST /perfil/senha -> alterar a própria senha (precisa saber a atual)
+async function alterarSenha(req, res) {
+  const pessoa = await personModel.findById(req.user.person_id);
+
+  try {
+    const { senhaAtual, novaSenha, confirmarNovaSenha } = req.body;
+
+    const senhaAtualOk = await bcrypt.compare(senhaAtual || '', req.user.password_hash || '');
+    if (!senhaAtualOk) {
+      return res.render('people/perfil', {
+        title: 'Meu perfil',
+        pessoa,
+        erro: 'Senha atual incorreta.',
+        sucesso: null,
+      });
+    }
+
+    if (!novaSenha || novaSenha.length < 6) {
+      return res.render('people/perfil', {
+        title: 'Meu perfil',
+        pessoa,
+        erro: 'A nova senha deve ter pelo menos 6 caracteres.',
+        sucesso: null,
+      });
+    }
+
+    if (novaSenha !== confirmarNovaSenha) {
+      return res.render('people/perfil', {
+        title: 'Meu perfil',
+        pessoa,
+        erro: 'As senhas não conferem.',
+        sucesso: null,
+      });
+    }
+
+    const hash = await bcrypt.hash(novaSenha, 10);
+    await userModel.setPassword(req.user.id, hash);
+
+    res.render('people/perfil', {
+      title: 'Meu perfil',
+      pessoa,
+      erro: null,
+      sucesso: 'Senha alterada com sucesso!',
+    });
+  } catch (err) {
+    console.error(err);
+    res.render('people/perfil', {
+      title: 'Meu perfil',
+      pessoa,
+      erro: 'Erro ao alterar a senha. Tente novamente.',
+      sucesso: null,
+    });
+  }
+}
+
+module.exports = { verPerfil, atualizarFoto, alterarSenha };

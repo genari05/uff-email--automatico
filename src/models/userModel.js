@@ -62,6 +62,23 @@ async function grantAccess(userId, { password_set_token, password_set_expires })
   return data;
 }
 
+/**
+ * Gera um token de redefinição de senha SEM mexer no has_access -
+ * diferente do grantAccess (que é só pra quando o acesso acabou de
+ * ser aprovado pela primeira vez). Usado no "esqueci minha senha".
+ */
+async function setPasswordResetToken(userId, { token, expiresAt }) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ password_set_token: token, password_set_expires: expiresAt })
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 async function setPassword(userId, passwordHash) {
   const { data, error } = await supabase
     .from(TABLE)
@@ -139,6 +156,7 @@ module.exports = {
   findByPasswordSetToken,
   findByEmailWithAccess,
   grantAccess,
+  setPasswordResetToken,
   setPassword,
   findById,
   findLeaders,

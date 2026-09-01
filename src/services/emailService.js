@@ -58,6 +58,34 @@ async function sendVerificationEmail({ to, name, token }) {
 }
 
 /**
+ * E-mail de "esqueci minha senha" - reaproveita a mesma tela de
+ * definir senha usada na primeira vez, só que pra quem já tem
+ * acesso e só esqueceu a senha.
+ */
+async function sendPasswordResetEmail({ to, name, token }) {
+  const link = `${env.appUrl}/auth/definir-senha/${token}`;
+  return sendMail({
+    to,
+    subject: 'Redefinir sua senha - Sistema UFF',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Olá, ${name}!</h2>
+        <p>Recebemos um pedido pra redefinir a senha da sua conta no sistema UFF.</p>
+        <p>Clique no botão abaixo para criar uma senha nova:</p>
+        <p>
+          <a href="${link}"
+             style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
+                    text-decoration:none;border-radius:6px;">
+            Criar nova senha
+          </a>
+        </p>
+        <p style="color:#888;font-size:12px;">Este link expira em 24 horas. Se você não pediu isso, pode ignorar este e-mail com segurança.</p>
+      </div>
+    `,
+  });
+}
+
+/**
  * E-mail avisando que o pedido de acesso foi APROVADO, com link
  * para a pessoa definir a própria senha de acesso ao sistema.
  */
@@ -222,6 +250,7 @@ module.exports = {
   sendMail,
   sendVerificationEmail,
   sendAccessApprovedEmail,
+  sendPasswordResetEmail,
   sendNewAccessRequestEmail,
   sendNewLeaderRequestEmail,
   sendTaskAssignedEmail,

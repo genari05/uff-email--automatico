@@ -13,5 +13,6 @@ router.use(requireAuth);
 
 router.get('/', profileController.verPerfil);
 router.post('/foto', upload.single('foto'), profileController.atualizarFoto);
+router.post('/senha', profileController.alterarSenha);
 
 module.exports = router;
