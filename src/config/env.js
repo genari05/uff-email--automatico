@@ -20,12 +20,8 @@ module.exports = {
     serviceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
   },
 
-  smtp: {
-    host: required('SMTP_HOST'),
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
-    user: required('SMTP_USER'),
-    pass: required('SMTP_PASS'),
-    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+  resend: {
+    apiKey: required('RESEND_API_KEY'),
+    from: process.env.EMAIL_FROM || 'Sistema UFF <onboarding@resend.dev>',
   },
 };

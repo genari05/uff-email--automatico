@@ -1,26 +1,33 @@
-const nodemailer = require('nodemailer');
 const env = require('../config/env');
-
-const transporter = nodemailer.createTransport({
-  host: env.smtp.host,
-  port: env.smtp.port,
-  secure: env.smtp.secure, // true para 465, false para outras portas
-  auth: {
-    user: env.smtp.user,
-    pass: env.smtp.pass,
-  },
-});
 
 /**
  * Envio genérico de e-mail (usado por todas as funções abaixo).
+ * Usa a API do Resend por HTTPS, em vez de SMTP direto - hospedagens
+ * gratuitas como o Render costumam bloquear a porta SMTP (587) de
+ * saída, o que fazia os e-mails nunca chegarem sem nenhum erro visível.
+ * A API HTTPS não tem esse problema.
  */
 async function sendMail({ to, subject, html }) {
-  return transporter.sendMail({
-    from: env.smtp.from,
-    to,
-    subject,
-    html,
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.resend.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: env.resend.from,
+      to,
+      subject,
+      html,
+    }),
   });
+
+  if (!response.ok) {
+    const detalhe = await response.text().catch(() => '');
+    throw new Error(`Falha ao enviar e-mail (Resend ${response.status}): ${detalhe}`);
+  }
+
+  return response.json();
 }
 
 /**
