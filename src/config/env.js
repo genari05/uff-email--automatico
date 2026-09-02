@@ -22,6 +22,6 @@ module.exports = {
 
   resend: {
     apiKey: required('RESEND_API_KEY'),
-    from: process.env.EMAIL_FROM || 'Sistema UFF <onboarding@resend.dev>',
+    from: process.env.EMAIL_FROM || 'Semana da Psicologia <onboarding@resend.dev>',
   },
 };

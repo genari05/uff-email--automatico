@@ -37,11 +37,11 @@ async function sendVerificationEmail({ to, name, token }) {
   const link = `${env.appUrl}/pessoas/verificar/${token}`;
   return sendMail({
     to,
-    subject: 'Confirme seu e-mail - Sistema UFF',
+    subject: 'Confirme seu e-mail - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Olá, ${name}!</h2>
-        <p>Você foi cadastrado(a) no sistema de e-mails da UFF.</p>
+        <p>Você foi cadastrado(a) no sistema da Semana da Psicologia.</p>
         <p>Para confirmar que este é o seu e-mail, clique no botão abaixo:</p>
         <p>
           <a href="${link}"
@@ -66,11 +66,11 @@ async function sendPasswordResetEmail({ to, name, token }) {
   const link = `${env.appUrl}/auth/definir-senha/${token}`;
   return sendMail({
     to,
-    subject: 'Redefinir sua senha - Sistema UFF',
+    subject: 'Redefinir sua senha - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Olá, ${name}!</h2>
-        <p>Recebemos um pedido pra redefinir a senha da sua conta no sistema UFF.</p>
+        <p>Recebemos um pedido pra redefinir a senha da sua conta no sistema da Semana da Psicologia.</p>
         <p>Clique no botão abaixo para criar uma senha nova:</p>
         <p>
           <a href="${link}"
@@ -93,11 +93,11 @@ async function sendAccessApprovedEmail({ to, name, token }) {
   const link = `${env.appUrl}/auth/definir-senha/${token}`;
   return sendMail({
     to,
-    subject: 'Acesso liberado - Sistema UFF',
+    subject: 'Acesso liberado - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Boas notícias, ${name}!</h2>
-        <p>Seu pedido de acesso ao sistema de e-mails da UFF foi <b>aprovado</b>.</p>
+        <p>Seu pedido de acesso ao sistema da Semana da Psicologia foi <b>aprovado</b>.</p>
         <p>Clique no botão abaixo para criar sua senha de acesso:</p>
         <p>
           <a href="${link}"
@@ -119,11 +119,11 @@ async function sendNewAccessRequestEmail({ to, requesterName }) {
   const link = `${env.appUrl}/acesso/pendentes`;
   return sendMail({
     to,
-    subject: 'Novo pedido de acesso - Sistema UFF',
+    subject: 'Novo pedido de acesso - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Novo pedido de acesso</h2>
-        <p><b>${requesterName}</b> solicitou acesso ao sistema de e-mails da UFF.</p>
+        <p><b>${requesterName}</b> solicitou acesso ao sistema da Semana da Psicologia.</p>
         <p>
           <a href="${link}"
              style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
@@ -143,11 +143,11 @@ async function sendNewLeaderRequestEmail({ to, requesterName }) {
   const link = `${env.appUrl}/acesso/pendentes`;
   return sendMail({
     to,
-    subject: 'Pedido para virar líder - Sistema UFF',
+    subject: 'Pedido para virar líder - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Pedido de promoção a líder</h2>
-        <p><b>${requesterName}</b> solicitou se tornar líder do sistema de e-mails da UFF.</p>
+        <p><b>${requesterName}</b> solicitou se tornar líder do sistema da Semana da Psicologia.</p>
         <p>
           <a href="${link}"
              style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
@@ -170,7 +170,7 @@ async function sendTaskAssignedEmail({ to, name, title, description, deadlineDat
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Olá, ${name}!</h2>
-        <p>Você recebeu uma nova tarefa no sistema UFF:</p>
+        <p>Você recebeu uma nova tarefa no sistema da Semana da Psicologia:</p>
         <p style="padding:12px; background:#f4f6f8; border-radius:6px;">
           <b>${title}</b><br>
           ${description ? description.replace(/\n/g, '<br>') + '<br>' : ''}
@@ -198,7 +198,7 @@ async function sendTaskAwaitingApprovalEmail({ to, creatorName, responsibleName,
   const link = `${env.appUrl}/tarefas/aprovacao`;
   return sendMail({
     to,
-    subject: 'Tarefa aguardando aprovação - Sistema UFF',
+    subject: 'Tarefa aguardando aprovação - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Nova tarefa para aprovar</h2>
@@ -221,7 +221,7 @@ async function sendTaskAwaitingApprovalEmail({ to, creatorName, responsibleName,
 async function sendTaskDeniedEmail({ to, creatorName, responsibleName, title }) {
   return sendMail({
     to,
-    subject: 'Tarefa negada - Sistema UFF',
+    subject: 'Tarefa negada - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Olá, ${creatorName}</h2>
