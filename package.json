@@ -1,7 +1,7 @@
 {
   "name": "uff-email-system",
   "version": "1.0.0",
-  "description": "Sistema de envio de e-mails da UFF - cadastro, verificação, controle de acesso e disparo de e-mails.",
+  "description": "Sistema de envio de e-mails da Semana da Psicologia - cadastro, verificação, controle de acesso e disparo de e-mails.",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
@@ -18,10 +18,13 @@
     "express-validator": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.0",
-    "node-cron": "^3.0.3"
+    "node-cron": "^4.6.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   },
   "engines": {
     "node": ">=18.0.0"
