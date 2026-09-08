@@ -647,7 +647,17 @@ button:hover, .btn-primary:hover {
   gap: 16px;
 }
 
-.app-topbar h1 { font-size: 20px; margin: 0; }
+.app-topbar > div:first-child { min-width: 0; }
+
+.app-topbar h1 {
+  font-size: 20px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-topbar > div:last-child { flex-shrink: 0; }
 
 .topbar-avatar-link { flex-shrink: 0; line-height: 0; }
 
@@ -689,19 +699,76 @@ button:hover, .btn-primary:hover {
   .app-shell { flex-direction: column; }
 
   .sidebar {
-    width: 100%;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand logout"
+      "nav nav";
     align-items: center;
-    padding: 12px 16px;
-    flex-wrap: wrap;
+    column-gap: 10px;
+    row-gap: 8px;
+    width: 100%;
+    padding: 12px 16px 10px;
   }
 
-  .sidebar-brand { padding: 0; margin-right: auto; }
-  .sidebar-nav { flex-direction: row; flex-wrap: wrap; width: 100%; margin-top: 12px; }
-  .sidebar-footer { display: none; }
+  /* "Destrava" o wrapper que agrupa marca + menu + mancha, pra cada
+     um poder virar uma peça independente da grade acima */
+  .sidebar > div:first-child { display: contents; }
 
-  .app-content { padding: 20px; }
-  .app-topbar { padding: 14px 20px; }
+  .sidebar-brand { grid-area: brand; padding: 0; }
+
+  .sidebar-nav {
+    grid-area: nav;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+  .sidebar-nav a {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 7px 11px;
+    font-size: 12.5px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
+  .sidebar-nav a.ativo { border-left-color: transparent; border-bottom-color: var(--color-accent); }
+  .sidebar-nav a svg { width: 15px; height: 15px; }
+
+  .sidebar-blot { display: none; } /* era pra preencher vão vertical, que não existe mais aqui */
+
+  /* Nome/e-mail já aparecem no avatar do topo da página - some só
+     essa parte redundante, mas mantém o "Sair" sempre acessível */
+  .sidebar-user { display: none; }
+  .sidebar-footer {
+    grid-area: logout;
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+  .sidebar-footer a.sair {
+    padding: 7px 12px;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  .app-content { padding: 18px; }
+  .app-topbar { padding: 12px 16px; }
+  .app-topbar h1 { font-size: 17px; }
+}
+
+/* Telas bem estreitas (celulares menores) */
+@media (max-width: 380px) {
+  .card { padding: 16px; }
+  .modal-overlay { padding: 12px; }
+  .modal-box { padding: 16px; }
+  .crop-mask { width: 200px; height: 200px; }
+  .tutorial-box { padding: 20px; }
 }
 
 /* =========================================================
@@ -1088,7 +1155,9 @@ details .form { margin-top: 16px; }
   filter: grayscale(1);
   user-select: none;
 }
-@media (max-width: 860px) { .ala-bg-figura { display: none; } }
+@media (max-width: 860px) {
+  .ala-bg-figura { height: 130px; right: 8px; opacity: 0.06; }
+}
 
 .tutorial-overlay {
   position: fixed;
