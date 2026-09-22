@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Nova tarefa - ' + gt.name }) %>
+
+      <div class="app-content">
+        <div class="card" style="max-width: 640px; margin: 0 auto;">
+          <a href="/gts/<%= gt.slug %>" class="voltar-link">← Voltar</a>
+
+          <p class="alerta">
+            Se o GT de destino for diferente do <b><%= gt.name %></b>, a tarefa só entra pra valer depois que o líder de lá aprovar.
+            <% if (gtMembership.role !== 'leader') { %> Como você não é líder deste GT, mesmo dentro dele a tarefa fica aguardando aprovação.<% } %>
+          </p>
+          <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+
+          <form method="POST" action="/gts/<%= gt.slug %>/tarefas" class="form" style="max-width: none;">
+            <label for="targetGtId">GT de destino</label>
+            <select id="targetGtId" name="targetGtId" required>
+              <% gts.forEach(g => { %>
+                <option value="<%= g.id %>" <%= g.id === gt.id ? 'selected' : '' %>><%= g.name %><%= g.id === gt.id ? ' (este GT)' : '' %></option>
+              <% }) %>
+            </select>
+
+            <label for="responsibleId">Responsável</label>
+            <select id="responsibleId" name="responsibleId" required>
+              <option value="">Selecione o GT de destino primeiro</option>
+            </select>
+
+            <label for="title">Título da tarefa</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="description">Descrição (opcional)</label>
+            <textarea id="description" name="description" rows="4"></textarea>
+
+            <label for="deadlineDate">Prazo de entrega</label>
+            <input type="date" id="deadlineDate" name="deadlineDate" min="<%= today %>" required>
+
+            <hr>
+
+            <label class="checkbox-linha">
+              <input type="checkbox" id="sendReminder" name="sendReminder">
+              Enviar um lembrete por e-mail automaticamente (opcional)
+            </label>
+
+            <div id="camposLembrete" style="display:none; margin-top: 12px;">
+              <div class="campo-data-hora">
+                <div>
+                  <label for="reminderDate">Data do lembrete</label>
+                  <input type="date" id="reminderDate" name="reminderDate" min="<%= today %>">
+                </div>
+                <div>
+                  <label for="reminderTime">Horário <span class="opcional-tag">opcional</span></label>
+                  <input type="time" id="reminderTime" name="reminderTime">
+                </div>
+              </div>
+              <small style="color: var(--color-text-muted); display: block; margin-top: 6px;">Se deixar o horário em branco, o lembrete é enviado à meia-noite (00:00) do dia marcado.</small>
+
+              <label for="reminderType" style="margin-top: 14px;">Tipo de e-mail do lembrete</label>
+              <select id="reminderType" name="reminderType">
+                <option value="custom">Escrever um e-mail personalizado</option>
+                <option value="template">Usar um modelo pronto</option>
+              </select>
+
+              <div id="campoTemplate" style="display:none;">
+                <label for="reminderTemplateId">Modelo</label>
+                <select id="reminderTemplateId" name="reminderTemplateId">
+                  <option value="">Selecione um modelo</option>
+                  <% templates.forEach(t => { %>
+                    <option value="<%= t.id %>"><%= t.title %></option>
+                  <% }) %>
+                </select>
+                <% if (templates.length === 0) { %>
+                  <p style="font-size: 13px; color: var(--color-text-muted);">Nenhum modelo cadastrado ainda — crie um na tela de Enviar e-mail.</p>
+                <% } %>
+              </div>
+
+              <div id="campoCustom">
+                <label for="reminderSubject">Assunto do lembrete</label>
+                <input type="text" id="reminderSubject" name="reminderSubject">
+
+                <label for="reminderBody">Mensagem do lembrete</label>
+                <textarea id="reminderBody" name="reminderBody" rows="5"></textarea>
+              </div>
+            </div>
+
+            <button type="submit" style="margin-top: 16px;">Criar tarefa</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PORTA_MEMBROS_POR_GT = <%- JSON.stringify(porGt) %>;
+
+    const targetGtSelect = document.getElementById('targetGtId');
+    const responsibleSelect = document.getElementById('responsibleId');
+
+    function atualizarResponsaveis() {
+      const membros = PORTA_MEMBROS_POR_GT[targetGtSelect.value] || [];
+      responsibleSelect.innerHTML = '';
+      if (membros.length === 0) {
+        responsibleSelect.innerHTML = '<option value="">Nenhum membro aprovado nesse GT ainda</option>';
+        return;
+      }
+      responsibleSelect.innerHTML = '<option value="">Selecione a pessoa</option>' +
+        membros.map((m) => `<option value="${m.personId}">${m.name}</option>`).join('');
+    }
+    targetGtSelect.addEventListener('change', atualizarResponsaveis);
+    atualizarResponsaveis();
+
+    const checkboxLembrete = document.getElementById('sendReminder');
+    const camposLembrete = document.getElementById('camposLembrete');
+    const tipoLembrete = document.getElementById('reminderType');
+    const campoTemplate = document.getElementById('campoTemplate');
+    const campoCustom = document.getElementById('campoCustom');
+    const deadlineInput = document.getElementById('deadlineDate');
+    const reminderDateInput = document.getElementById('reminderDate');
+
+    checkboxLembrete.addEventListener('change', () => {
+      camposLembrete.style.display = checkboxLembrete.checked ? 'block' : 'none';
+    });
+
+    deadlineInput.addEventListener('change', () => {
+      if (deadlineInput.value) reminderDateInput.max = deadlineInput.value;
+    });
+
+    function atualizarTipoLembrete() {
+      if (tipoLembrete.value === 'template') {
+        campoTemplate.style.display = 'block';
+        campoCustom.style.display = 'none';
+      } else {
+        campoTemplate.style.display = 'none';
+        campoCustom.style.display = 'block';
+      }
+    }
+    tipoLembrete.addEventListener('change', atualizarTipoLembrete);
+    atualizarTipoLembrete();
+  </script>
+</body>
+</html>

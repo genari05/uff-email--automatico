@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const userModel = require('../models/userModel');
+const gtMembershipModel = require('../models/gtMembershipModel');
 
 /**
  * Garante que existe um usuário logado E com has_access = true.
@@ -34,6 +35,17 @@ async function requireAuth(req, res, next) {
 
     req.user = user; // disponível nos controllers/views
     res.locals.currentUser = user;
+
+    // GTs aprovados da pessoa + qual está ativo agora, pro trocador
+    // de GT que aparece na sidebar em toda página do sistema.
+    try {
+      res.locals.meusGtsSidebar = await gtMembershipModel.listApprovedByUser(user.id);
+    } catch (errGt) {
+      console.error('Erro ao carregar GTs da sidebar (ignorado):', errGt.message);
+      res.locals.meusGtsSidebar = [];
+    }
+    res.locals.gtAtivoSlug = req.cookies?.gt_ativo || null;
+
     next();
   } catch (err) {
     console.error('Erro temporário ao verificar sessão (mantida):', err.message);

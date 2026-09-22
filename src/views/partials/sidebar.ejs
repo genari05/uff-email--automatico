@@ -5,7 +5,35 @@
       Semana da Psicologia
     </div>
 
+    <% if (typeof meusGtsSidebar !== 'undefined' && meusGtsSidebar.length > 0) { %>
+      <div class="gt-switcher" title="Trocar de GT">
+        <% meusGtsSidebar.forEach(m => { %>
+          <a href="/gts/<%= m.gts.slug %>"
+             class="gt-switcher-icone <%= currentPath.startsWith('/gts/' + m.gts.slug) ? 'ativo' : '' %>"
+             style="--gt-color: <%= m.gts.color %>;"
+             title="<%= m.gts.name %><%= m.role === 'leader' ? ' (líder)' : '' %>">
+            <%= m.gts.name.replace('GT ', '').charAt(0).toUpperCase() %>
+          </a>
+        <% }) %>
+        <a href="/gts" class="gt-switcher-icone gt-switcher-mais" title="Ver todos os GTs">+</a>
+      </div>
+    <% } %>
+
     <nav class="sidebar-nav">
+      <a href="/gts" class="<%= currentPath === '/gts' ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.4"/><rect x="11" y="2.5" width="6.5" height="6.5" rx="1.4"/><rect x="2.5" y="11" width="6.5" height="6.5" rx="1.4"/><rect x="11" y="11" width="6.5" height="6.5" rx="1.4"/></svg>
+        Grupos de Trabalho
+      </a>
+      <a href="/gts/central" class="<%= currentPath === '/gts/central' ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 9.5c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6-3.4 6-7.5 6c-.9 0-1.8-.1-2.6-.4L3 17l1-3.4c-.9-1-1.5-2.3-1.5-4.1z"/></svg>
+        Mural central
+      </a>
+      <% if (typeof meusGtsSidebar !== 'undefined' && meusGtsSidebar.some(m => m.role === 'leader')) { %>
+        <a href="/gts/pendentes" class="<%= currentPath === '/gts/pendentes' ? 'ativo' : '' %>">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="13" rx="1.6"/><path d="M2.5 8.5h15"/><path d="M6 12.2l2 2 4-4"/></svg>
+          Pedidos de GT
+        </a>
+      <% } %>
       <a href="/pessoas" class="<%= currentPath === '/pessoas' ? 'ativo' : '' %>">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 17v-1.5a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3V17"/><circle cx="7" cy="6.5" r="3"/><path d="M17 17v-1.3a2.7 2.7 0 0 0-2-2.6"/><path d="M12 3.2a3 3 0 0 1 0 5.7"/></svg>
         Pessoas

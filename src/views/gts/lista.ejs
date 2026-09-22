@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Grupos de Trabalho' }) %>
+
+      <div class="app-content">
+        <div class="card">
+          <h2 style="margin-top:0;">Grupos de Trabalho (GTs)</h2>
+          <p style="color: var(--color-text-muted);">Cada GT tem acesso trancado: só entra quem pedir e for aprovado pelo líder daquele GT.</p>
+
+          <div class="gt-grid">
+            <% gts.forEach(gt => { %>
+              <div class="gt-card" style="--gt-color: <%= gt.color %>;">
+                <div class="gt-card-topo">
+                  <span class="gt-cor-dot"></span>
+                  <strong><%= gt.name %></strong>
+                </div>
+                <% if (gt.description) { %><p class="gt-card-desc"><%= gt.description %></p><% } %>
+
+                <% if (gt.minhaSituacao === 'approved') { %>
+                  <span class="badge badge-sucesso">
+                    Você é <%= gt.meuPapel === 'leader' ? 'líder' : 'membro' %>
+                  </span>
+                  <form method="POST" action="/gts/<%= gt.slug %>/ativar" style="margin-top:10px;">
+                    <button type="submit" class="<%= gtAtivoSlug === gt.slug ? 'btn-nao' : '' %>">
+                      <%= gtAtivoSlug === gt.slug ? 'GT ativo agora' : 'Entrar neste GT' %>
+                    </button>
+                  </form>
+                <% } else if (gt.minhaSituacao === 'pending') { %>
+                  <span class="badge badge-pendente">Pedido aguardando aprovação</span>
+                <% } else if (gt.minhaSituacao === 'denied') { %>
+                  <span class="badge badge-negado">Pedido negado</span>
+                <% } else { %>
+                  <form method="POST" action="/gts/<%= gt.slug %>/entrar" style="margin-top:10px;">
+                    <button type="submit">Pedir entrada</button>
+                  </form>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

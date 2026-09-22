@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Mural central dos GTs' }) %>
+
+      <div class="app-content">
+        <div class="card">
+          <h2 style="margin-top:0;">Mural central</h2>
+          <p style="color: var(--color-text-muted);">Onde os GTs se comunicam entre si — ex: "GT Comunicação avisa o GT Infra que já pode postar".</p>
+
+          <% if (meusGts.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Você ainda não faz parte de nenhum GT</h3>
+              <p>Peça entrada em um GT na tela de Grupos de Trabalho pra poder postar aqui.</p>
+            </div>
+          <% } else { %>
+            <form method="POST" action="/gts/central" class="form" style="max-width:none; margin-bottom: 20px;">
+              <label for="gtId">Postar em nome de</label>
+              <select id="gtId" name="gtId" required>
+                <% meusGts.forEach(m => { %>
+                  <option value="<%= m.gts.id %>"><%= m.gts.name %></option>
+                <% }) %>
+              </select>
+
+              <label for="message">Mensagem</label>
+              <textarea id="message" name="message" rows="3" required placeholder="Ex: pessoal do GT Infra, finalizamos os posts, podem publicar!"></textarea>
+
+              <button type="submit" style="margin-top:12px;">Enviar</button>
+            </form>
+          <% } %>
+
+          <% if (mensagens.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nada por aqui ainda</h3>
+              <p>As mensagens entre GTs vão aparecer aqui, como um grupo geral da equipe.</p>
+            </div>
+          <% } else { %>
+            <div class="mural-chat">
+              <% mensagens.slice().reverse().forEach(m => { %>
+                <%
+                  const pessoa = m.users?.people;
+                  const nome = pessoa ? pessoa.name : 'Sistema';
+                  const inicial = nome.charAt(0).toUpperCase();
+                %>
+                <div class="mural-msg">
+                  <% if (pessoa && pessoa.avatar_url) { %>
+                    <img class="mural-avatar" src="<%= pessoa.avatar_url %>" alt="">
+                  <% } else { %>
+                    <div class="mural-avatar" style="background: <%= m.gts.color %>;"><%= inicial %></div>
+                  <% } %>
+                  <div class="mural-msg-body">
+                    <div class="mural-bubble membro" style="border-color: <%= m.gts.color %>1a;">
+                      <span class="mural-nome" style="color: <%= m.gts.color %>;"><%= m.gts.name %></span> ·
+                      <span class="mural-nome"><%= nome %></span>
+                      <%= m.message %>
+                      <small><%= new Date(m.created_at).toLocaleString('pt-BR') %></small>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

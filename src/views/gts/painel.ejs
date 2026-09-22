@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: gt.name }) %>
+
+      <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
+        <div class="card" style="border-top: 3px solid <%= gt.color %>;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2 style="margin:0;"><%= gt.name %></h2>
+              <% if (gt.description) { %><p style="color: var(--color-text-muted); margin:4px 0 0;"><%= gt.description %></p><% } %>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <a href="/gts/<%= gt.slug %>/tarefas/nova"><button type="button">Nova tarefa</button></a>
+              <% if (gtMembership.role === 'leader') { %>
+                <a href="/gts/<%= gt.slug %>/tarefas/aprovacao"><button type="button" class="btn-nao">Aprovar tarefas</button></a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0;">Tarefas do <%= gt.name %></h2>
+
+          <% if (tarefas.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma tarefa por aqui ainda</h3>
+              <p>Crie uma tarefa pra alguém deste GT, ou para outro GT (com aprovação do líder de lá).</p>
+            </div>
+          <% } else { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr><th>Tarefa</th><th>Responsável</th><th>Prazo</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <% tarefas.forEach(t => { %>
+                    <tr>
+                      <td data-label="Tarefa"><%= t.title %></td>
+                      <td data-label="Responsável"><%= t.people.name %></td>
+                      <td data-label="Prazo"><%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></td>
+                      <td data-label="Status">
+                        <% if (t.status === 'completed') { %>
+                          <span class="badge badge-sucesso">Concluída</span>
+                        <% } else if (t.status === 'denied') { %>
+                          <span class="badge badge-negado">Negada</span>
+                        <% } else { %>
+                          <span class="badge badge-pendente">Pendente</span>
+                          <% if (t.responsible_person_id === currentUser.person_id) { %>
+                            <form method="POST" action="/gts/<%= gt.slug %>/tarefas/<%= t.id %>/concluir" style="display:inline; margin-left:8px;">
+                              <button type="submit" class="btn-sim" style="padding:4px 10px; font-size:12px;">Concluir</button>
+                            </form>
+                          <% } %>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0;">Mural do <%= gt.name %></h2>
+
+          <% if (atividades.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nada por aqui ainda</h3>
+              <p>As atividades deste GT aparecem aqui, como um grupo próprio da equipe.</p>
+            </div>
+          <% } else { %>
+            <div class="mural-chat">
+              <% atividades.slice().reverse().forEach((a) => { %>
+                <%
+                  const pessoaMural = a.people;
+                  const nomeMural = pessoaMural ? pessoaMural.name : 'Sistema';
+                  const inicial = nomeMural.charAt(0).toUpperCase();
+                  const classePapel = a.papel === 'leader' ? 'lider' : 'membro';
+                %>
+                <div class="mural-msg">
+                  <% if (pessoaMural && pessoaMural.avatar_url) { %>
+                    <img class="mural-avatar" src="<%= pessoaMural.avatar_url %>" alt="">
+                  <% } else { %>
+                    <div class="mural-avatar"><%= inicial %></div>
+                  <% } %>
+                  <div class="mural-msg-body">
+                    <div class="mural-bubble <%= classePapel %>">
+                      <span class="mural-nome"><%= nomeMural %></span>
+                      <%= a.message %>
+                      <small><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

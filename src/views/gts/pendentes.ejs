@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Pedidos de entrada em GTs' }) %>
+
+      <div class="app-content">
+        <div class="card">
+          <h2 style="margin-top:0;">Pedidos de entrada</h2>
+
+          <% if (pedidos.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhum pedido pendente</h3>
+              <p>Quando alguém pedir entrada em um GT que você lidera, aparece aqui.</p>
+            </div>
+          <% } else { %>
+            <ul class="lista-pedidos">
+              <% pedidos.forEach(p => { %>
+                <li class="card-pedido">
+                  <div>
+                    <strong><%= p.users?.people?.name %></strong>
+                    <span class="badge" style="background: <%= p.gts.color %>1a; color: <%= p.gts.color %>; border: none;"><%= p.gts.name %></span>
+                    <br>
+                    <span><%= p.users?.people?.email %></span>
+                  </div>
+                  <div class="acoes-pedido">
+                    <form method="POST" action="/gts/pendentes/<%= p.id %>/resolver" style="display:inline">
+                      <input type="hidden" name="decisao" value="approved">
+                      <button type="submit" class="btn-sim">Aprovar</button>
+                    </form>
+                    <form method="POST" action="/gts/pendentes/<%= p.id %>/resolver" style="display:inline">
+                      <input type="hidden" name="decisao" value="denied">
+                      <button type="submit" class="btn-nao">Negar</button>
+                    </form>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
