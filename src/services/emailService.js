@@ -232,6 +232,73 @@ async function sendTaskDeniedEmail({ to, creatorName, responsibleName, title }) 
 }
 
 /**
+ * Avisa o(s) líder(es) de um GT que chegou um pedido de entrada.
+ */
+async function sendGtEntryRequestEmail({ to, requesterName, gtName }) {
+  const link = `${env.appUrl}/gts/pendentes`;
+  return sendMail({
+    to,
+    subject: `Pedido de entrada no ${gtName} - Semana da Psicologia`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Novo pedido de entrada</h2>
+        <p><b>${requesterName}</b> pediu para entrar no <b>${gtName}</b>.</p>
+        <p>
+          <a href="${link}"
+             style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
+                    text-decoration:none;border-radius:6px;">
+            Ver pedidos pendentes
+          </a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+/**
+ * Avisa a pessoa que seu pedido de entrada em um GT foi aprovado ou negado.
+ */
+async function sendGtEntryResolvedEmail({ to, name, gtName, aprovado }) {
+  return sendMail({
+    to,
+    subject: `${aprovado ? 'Entrada aprovada' : 'Pedido negado'} - ${gtName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Olá, ${name}!</h2>
+        <p>${aprovado
+          ? `Seu pedido para entrar no <b>${gtName}</b> foi aprovado. Já pode acessar por lá.`
+          : `Seu pedido para entrar no <b>${gtName}</b> não foi aprovado pelo líder.`}</p>
+      </div>
+    `,
+  });
+}
+
+/**
+ * Avisa o líder do GT de DESTINO que outro GT quer criar uma tarefa
+ * pra dentro do time dele (precisa aprovar antes de virar histórico).
+ */
+async function sendGtTaskAwaitingApprovalEmail({ to, gtOrigemNome, gtDestinoNome, responsibleName, title }) {
+  const link = `${env.appUrl}/gts/pendentes`;
+  return sendMail({
+    to,
+    subject: `Tarefa de outro GT aguardando aprovação - ${gtDestinoNome}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Nova tarefa entre GTs</h2>
+        <p>O <b>${gtOrigemNome}</b> quer criar a tarefa "<b>${title}</b>" para <b>${responsibleName}</b>, do <b>${gtDestinoNome}</b>.</p>
+        <p>
+          <a href="${link}"
+             style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
+                    text-decoration:none;border-radius:6px;">
+            Avaliar pedido
+          </a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+/**
  * Envio em massa (template "programado" ou personalizado) para
  * a lista de destinatários selecionada pelo usuário autorizado.
  */
@@ -257,5 +324,8 @@ module.exports = {
   sendTaskReminderEmail,
   sendTaskAwaitingApprovalEmail,
   sendTaskDeniedEmail,
+  sendGtEntryRequestEmail,
+  sendGtEntryResolvedEmail,
+  sendGtTaskAwaitingApprovalEmail,
   sendBulkEmail,
 };

@@ -11,17 +11,41 @@
       <div class="app-content">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom: 16px;">
+            <% if (typeof gtAtivo !== 'undefined' && gtAtivo) { %>
+              <span class="badge" style="background: <%= gtAtivo.color %>1a; color: <%= gtAtivo.color %>; border:none;">
+                Pessoas do <%= gtAtivo.name %>
+              </span>
+            <% } %>
             <p style="margin:0;"><a href="/pessoas/nova">+ Cadastrar nova pessoa</a></p>
           </div>
 
           <% if (typeof erro !== 'undefined' && erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
           <% if (typeof sucesso !== 'undefined' && sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
 
-          <% if (pessoas.length === 0) { %>
+          <% if (typeof gtAtivo === 'undefined' || !gtAtivo) { %>
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
-              <h3>Nenhuma pessoa cadastrada ainda</h3>
-              <p>Cadastre a primeira pessoa pra começar a montar sua lista de destinatários.</p>
+              <% if (typeof meusGts !== 'undefined' && meusGts.length > 1) { %>
+                <h3>Escolha um GT pra ver as pessoas dele</h3>
+                <p>Você participa de mais de um GT. Clique no ícone do GT na barra lateral pra escolher qual ver aqui.</p>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
+                  <% meusGts.forEach(m => { %>
+                    <form method="POST" action="/gts/<%= m.gts.slug %>/ativar" style="display:inline;">
+                      <button type="submit" class="btn-secundario" style="padding:6px 14px; font-size:13px; border-color: <%= m.gts.color %>; color: <%= m.gts.color %>;"><%= m.gts.name %></button>
+                    </form>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <h3>Você ainda não faz parte de nenhum GT</h3>
+                <p>Peça entrada em um GT na tela de Grupos de Trabalho pra poder ver e cadastrar pessoas por lá.</p>
+                <a href="/gts" class="btn-secundario" style="margin-top:8px;">Ver Grupos de Trabalho</a>
+              <% } %>
+            </div>
+          <% } else if (pessoas.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma pessoa no <%= gtAtivo.name %> ainda</h3>
+              <p>Cadastre a primeira pessoa, ou aprove pedidos de entrada nesse GT, pra montar a equipe por aqui.</p>
             </div>
           <% } else { %>
             <div class="table-wrapper">

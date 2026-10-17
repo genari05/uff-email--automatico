@@ -525,6 +525,50 @@ button:hover, .btn-primary:hover {
   box-shadow: 0 0 0 3px rgba(53, 196, 232, 0.2);
 }
 
+/* =========================================================
+   TROCADOR DE GT — rail de ícones coloridos estilo Discord/Slack,
+   um círculo por GT aprovado, cor de identidade de cada GT
+   ========================================================= */
+.gt-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 8px 20px;
+}
+
+.gt-switcher-icone {
+  --gt-color: var(--color-accent);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gt-color);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  text-decoration: none;
+  border: 2px solid transparent;
+  opacity: 0.68;
+  transition: opacity 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.gt-switcher-icone:hover { opacity: 1; transform: translateY(-2px); }
+.gt-switcher-icone.ativo {
+  opacity: 1;
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--gt-color);
+}
+
+.gt-switcher-mais {
+  background: var(--color-navy-soft);
+  color: var(--color-text-inverse-muted);
+  font-size: 18px;
+  font-weight: 500;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -1383,4 +1427,47 @@ details .form { margin-top: 16px; }
 
 @media (prefers-reduced-motion: reduce) {
   .loading-psi-fill { animation: none; clip-path: inset(30% 0 0 0); }
+}
+
+/* =========================================================
+   GRUPOS DE TRABALHO (GTs) — grid de cards na tela /gts
+   ========================================================= */
+.gt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.gt-card {
+  --gt-color: var(--color-accent);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--gt-color);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gt-card-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.gt-cor-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gt-color);
+  flex-shrink: 0;
+}
+
+.gt-card-desc {
+  color: var(--color-text-muted);
+  font-size: 13.5px;
+  margin: 0;
 }

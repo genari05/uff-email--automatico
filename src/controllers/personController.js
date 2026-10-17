@@ -1,6 +1,7 @@
 const personModel = require('../models/personModel');
 const userModel = require('../models/userModel');
 const accessRequestModel = require('../models/accessRequestModel');
+const gtMembershipModel = require('../models/gtMembershipModel');
 const { generateToken, expiresInHours } = require('../services/tokenService');
 const { sendVerificationEmail, sendNewAccessRequestEmail } = require('../services/emailService');
 
@@ -71,11 +72,14 @@ async function criarPessoa(req, res) {
     );
 
     if (req.user) {
-      // Logado -> fica na área interna, mostra a lista com aviso de sucesso
-      const pessoas = await personModel.listAll();
+      // Logado -> fica na área interna, mostra a lista (do GT ativo) com aviso de sucesso
+      const pessoas = req.gtAtivo
+        ? (await gtMembershipModel.listApprovedMembersOfGt(req.gtAtivo.id)).map((m) => m.users?.people).filter(Boolean)
+        : [];
       return res.render('people/lista', {
         title: 'Pessoas cadastradas',
         pessoas,
+        meusGts: req.meusGts,
         erro: null,
         sucesso: `${person.name} foi cadastrado(a) e já recebeu o e-mail de verificação.`,
       });
@@ -133,14 +137,40 @@ async function verificarEmail(req, res) {
   }
 }
 
-// GET /pessoas -> lista todas as pessoas (rota protegida - painel)
+// GET /pessoas -> lista as pessoas DO GT ativo (rota protegida - painel
+// do líder). Isolado por GT: só aparece quem é membro aprovado do
+// mesmo GT que está ativo pra quem está olhando.
 async function listarPessoas(req, res) {
+  // Sem GT ativo (a pessoa participa de mais de um GT e ainda não
+  // escolheu qual, ou não participa de nenhum) - pede pra escolher
+  // em vez de mostrar tudo misturado.
+  if (!req.gtAtivo) {
+    return res.render('people/lista', {
+      title: 'Pessoas cadastradas',
+      pessoas: [],
+      meusGts: req.meusGts,
+      erro: null,
+      sucesso: null,
+    });
+  }
+
   try {
-    const pessoas = await personModel.listAll();
-    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas, erro: null, sucesso: null });
+    const membros = await gtMembershipModel.listApprovedMembersOfGt(req.gtAtivo.id);
+    const pessoas = membros
+      .map((m) => m.users?.people)
+      .filter(Boolean)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    res.render('people/lista', {
+      title: 'Pessoas cadastradas',
+      pessoas,
+      meusGts: req.meusGts,
+      erro: null,
+      sucesso: null,
+    });
   } catch (err) {
     console.error(err);
-    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [], erro: null, sucesso: null });
+    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [], meusGts: req.meusGts, erro: null, sucesso: null });
   }
 }
 
@@ -233,10 +263,13 @@ async function reenviarVerificacao(req, res) {
       console.error('Erro ao reenviar e-mail de verificação:', err.message)
     );
 
-    const pessoas = await personModel.listAll();
+    const pessoas = req.gtAtivo
+      ? (await gtMembershipModel.listApprovedMembersOfGt(req.gtAtivo.id)).map((m) => m.users?.people).filter(Boolean)
+      : [];
     res.render('people/lista', {
       title: 'Pessoas cadastradas',
       pessoas,
+      meusGts: req.meusGts,
       erro: null,
       sucesso: `E-mail de verificação reenviado para ${pessoa.name}.`,
     });

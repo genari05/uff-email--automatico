@@ -10,5 +10,6 @@ router.use('/emails', require('./emailRoutes'));
 router.use('/tarefas', require('./taskRoutes'));
 router.use('/cron', require('./cronRoutes'));
 router.use('/perfil', require('./profileRoutes'));
+router.use('/gts', require('./gtRoutes'));
 
 module.exports = router;

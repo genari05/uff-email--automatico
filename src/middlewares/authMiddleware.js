@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const userModel = require('../models/userModel');
+const gtMembershipModel = require('../models/gtMembershipModel');
 
 /**
  * Garante que existe um usuário logado E com has_access = true.
@@ -34,6 +35,37 @@ async function requireAuth(req, res, next) {
 
     req.user = user; // disponível nos controllers/views
     res.locals.currentUser = user;
+
+    // GTs aprovados da pessoa + qual está ativo agora. O GT ativo
+    // vale tanto pro trocador da sidebar quanto pro isolamento de
+    // dados (pessoas, e-mail, etc só mostram gente do GT ativo).
+    try {
+      req.meusGts = await gtMembershipModel.listApprovedByUser(user.id);
+    } catch (errGt) {
+      console.error('Erro ao carregar GTs da pessoa (ignorado):', errGt.message);
+      req.meusGts = [];
+    }
+    res.locals.meusGtsSidebar = req.meusGts;
+
+    const slugCookie = req.cookies?.gt_ativo || null;
+    let membershipAtiva = slugCookie ? req.meusGts.find((m) => m.gts.slug === slugCookie) : null;
+
+    // Se não tem GT ativo escolhido mas a pessoa só participa de UM
+    // GT, não faz sentido pedir pra escolher - já ativa ele direto.
+    if (!membershipAtiva && req.meusGts.length === 1) {
+      membershipAtiva = req.meusGts[0];
+      res.cookie('gt_ativo', membershipAtiva.gts.slug, {
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+      });
+    }
+
+    req.gtAtivo = membershipAtiva ? membershipAtiva.gts : null;
+    req.gtAtivoMembership = membershipAtiva || null;
+    res.locals.gtAtivo = req.gtAtivo;
+    res.locals.gtAtivoSlug = req.gtAtivo?.slug || null;
+
     next();
   } catch (err) {
     console.error('Erro temporário ao verificar sessão (mantida):', err.message);

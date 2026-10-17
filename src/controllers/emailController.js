@@ -1,21 +1,42 @@
 const personModel = require('../models/personModel');
 const emailModel = require('../models/emailModel');
+const gtMembershipModel = require('../models/gtMembershipModel');
 const { sendBulkEmail } = require('../services/emailService');
 
-// GET /emails/selecionar -> checkbox com todas as pessoas verificadas
+// Pessoas do GT ativo de quem está logado (isolamento: nunca mistura
+// gente de outro GT). Sem GT ativo escolhido, ninguém aparece.
+async function pessoasDoGtAtivo(req, { onlyVerified = false } = {}) {
+  if (!req.gtAtivo) return [];
+  const membros = await gtMembershipModel.listApprovedMembersOfGt(req.gtAtivo.id);
+  let pessoas = membros.map((m) => m.users?.people).filter(Boolean);
+  if (onlyVerified) pessoas = pessoas.filter((p) => p.verified);
+  return pessoas.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// GET /emails/selecionar -> checkbox só com pessoas verificadas do GT ativo
 async function formSelecionarDestinatarios(req, res) {
-  const pessoas = await personModel.listAll({ onlyVerified: true });
-  res.render('dashboard/selecionar-destinatarios', { title: 'Selecionar destinatários', pessoas });
+  const pessoas = await pessoasDoGtAtivo(req, { onlyVerified: true });
+  res.render('dashboard/selecionar-destinatarios', {
+    title: 'Selecionar destinatários',
+    pessoas,
+    gtAtivo: req.gtAtivo,
+    meusGts: req.meusGts,
+  });
 }
 
 // POST /emails/selecionar -> guarda a seleção e manda pra tela de tipo de e-mail
 async function processarSelecao(req, res) {
-  let { destinatarios } = req.body; // ids marcados (ou "todos")
+  let { destinatarios } = req.body; // ids marcados
   if (!destinatarios) destinatarios = [];
   if (!Array.isArray(destinatarios)) destinatarios = [destinatarios];
 
-  // guardamos os ids selecionados na query string da próxima etapa
-  const query = new URLSearchParams({ ids: destinatarios.join(',') }).toString();
+  // Isolamento também no backend: mesmo que alguém force IDs de fora
+  // no formulário, só passam os que são mesmo do GT ativo e verificados.
+  const permitidas = await pessoasDoGtAtivo(req, { onlyVerified: true });
+  const idsPermitidos = new Set(permitidas.map((p) => p.id));
+  const idsValidos = destinatarios.filter((id) => idsPermitidos.has(id));
+
+  const query = new URLSearchParams({ ids: idsValidos.join(',') }).toString();
   res.redirect(`/emails/tipo?${query}`);
 }
 
@@ -31,14 +52,20 @@ async function formCompor(req, res) {
   const ids = (req.query.ids || '').split(',').filter(Boolean);
   const templateId = req.query.template || null;
 
+  // Revalida contra o GT ativo aqui também - a lista de ids veio por
+  // query string, então não dá pra confiar nela sem checar de novo.
+  const permitidas = await pessoasDoGtAtivo(req);
+  const idsPermitidos = new Set(permitidas.map((p) => p.id));
+  const idsValidos = ids.filter((id) => idsPermitidos.has(id));
+
   const [template, pessoas] = await Promise.all([
     templateId ? emailModel.findTemplateById(templateId) : Promise.resolve(null),
-    personModel.findManyByIds(ids),
+    personModel.findManyByIds(idsValidos),
   ]);
 
   res.render('dashboard/compor-email', {
     title: 'Compor e-mail',
-    ids,
+    ids: idsValidos,
     pessoas,
     template,
   });
@@ -51,7 +78,13 @@ async function enviar(req, res) {
     if (!ids) ids = [];
     if (!Array.isArray(ids)) ids = [ids];
 
-    const pessoas = await personModel.findManyByIds(ids);
+    // Última barreira antes de disparar de verdade: só envia pra quem
+    // é do GT ativo de quem está mandando, não importa o que veio no form.
+    const permitidas = await pessoasDoGtAtivo(req);
+    const idsPermitidos = new Set(permitidas.map((p) => p.id));
+    const idsValidos = ids.filter((id) => idsPermitidos.has(id));
+
+    const pessoas = await personModel.findManyByIds(idsValidos);
     const recipients = pessoas.map((p) => p.email);
 
     if (recipients.length === 0) {
