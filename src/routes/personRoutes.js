@@ -12,8 +12,9 @@ router.get('/nova', optionalAuth, personController.formNovaPessoa);
 router.post('/', optionalAuth, personController.criarPessoa);
 router.get('/verificar/:token', personController.verificarEmail);
 
-// Rota protegida (só quem tem login e acesso)
-router.get('/', requireAuth, personController.listarPessoas);
+// Lista de pessoas cadastradas: visão administrativa, só do líder.
+// Membros não veem essa aba nem acessam a URL direto.
+router.get('/', requireAuth, requireLeader, personController.listarPessoas);
 
 // Editar/excluir: a própria pessoa pode mexer na conta dela,
 // e o líder pode mexer em qualquer uma.

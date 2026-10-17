@@ -139,36 +139,6 @@ async function remove(id) {
   if (error) throw error;
 }
 
-/**
- * Painel de tarefas de UM GT específico (equivalente ao listVisible()
- * global, mas só as tarefas que pertencem àquele GT).
- */
-async function listVisibleByGt(gtId) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select('*, people:responsible_person_id(*)')
-    .eq('gt_id', gtId)
-    .in('status', ['pending', 'completed', 'denied'])
-    .order('deadline_date', { ascending: true });
-  if (error) throw error;
-  return data;
-}
-
-/**
- * Tarefas cross-GT aguardando aprovação do líder do GT de destino
- * (origin_gt_id diferente de gt_id: alguém de outro GT criou pra este).
- */
-async function listAwaitingApprovalByGt(gtId) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select('*, people:responsible_person_id(*)')
-    .eq('gt_id', gtId)
-    .eq('status', 'aguardando_aprovacao')
-    .order('created_at', { ascending: true });
-  if (error) throw error;
-  return data;
-}
-
 module.exports = {
   create,
   findById,
@@ -182,6 +152,4 @@ module.exports = {
   listAllForStats,
   remove,
   listWithReminder,
-  listVisibleByGt,
-  listAwaitingApprovalByGt,
 };

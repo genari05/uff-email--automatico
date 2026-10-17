@@ -144,10 +144,17 @@ async function listarPessoas(req, res) {
   }
 }
 
+// Pra onde volta depois de editar/excluir: o líder volta pra lista
+// administrativa, o membro (editando a própria conta) volta pro perfil
+// dele, já que membro não tem mais acesso à lista de pessoas.
+function destinoAposAcao(req) {
+  return req.user.role === 'leader' ? '/pessoas' : '/perfil';
+}
+
 // GET /pessoas/:id/editar
 async function formEditarPessoa(req, res) {
   const pessoa = await personModel.findById(req.params.id);
-  if (!pessoa) return res.redirect('/pessoas');
+  if (!pessoa) return res.redirect(destinoAposAcao(req));
   res.render('people/editar', { title: 'Editar pessoa', pessoa, erro: null });
 }
 
@@ -157,7 +164,7 @@ async function editarPessoa(req, res) {
     const { id } = req.params;
     const { name, email } = req.body;
     const pessoa = await personModel.findById(id);
-    if (!pessoa) return res.redirect('/pessoas');
+    if (!pessoa) return res.redirect(destinoAposAcao(req));
 
     if (!name || !email) {
       return res.render('people/editar', {
@@ -193,7 +200,7 @@ async function editarPessoa(req, res) {
       );
     }
 
-    res.redirect('/pessoas');
+    res.redirect(destinoAposAcao(req));
   } catch (err) {
     console.error(err);
     const pessoa = await personModel.findById(req.params.id);
@@ -204,12 +211,13 @@ async function editarPessoa(req, res) {
 // POST /pessoas/:id/excluir -> remove a pessoa (e em cascata: usuário,
 // pedidos de acesso e tarefas dela, por causa das foreign keys do banco)
 async function excluirPessoa(req, res) {
+  const destino = destinoAposAcao(req);
   try {
     await personModel.remove(req.params.id);
   } catch (err) {
     console.error(err);
   }
-  res.redirect('/pessoas');
+  res.redirect(destino);
 }
 
 // POST /pessoas/:id/reenviar-verificacao -> gera novo token e reenvia o e-mail
