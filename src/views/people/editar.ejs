@@ -10,7 +10,7 @@
 
       <div class="app-content">
         <div class="card" style="max-width: 480px; margin: 0 auto;">
-          <a href="/pessoas" class="voltar-link">← Voltar para a lista</a>
+          <a href="<%= currentUser.role === 'leader' ? '/pessoas' : '/perfil' %>" class="voltar-link">← Voltar</a>
 
           <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
 

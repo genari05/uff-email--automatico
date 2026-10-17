@@ -41,7 +41,10 @@ async function login(req, res) {
 
     const token = jwt.sign({ userId: user.id }, env.jwtSecret, { expiresIn: '8h' });
     res.cookie('token', token, COOKIE_OPTIONS);
-    res.redirect('/pessoas');
+
+    // Líder cai na lista de pessoas (visão administrativa); membro,
+    // que não tem mais acesso a essa tela, cai nas tarefas dele.
+    res.redirect(user.role === 'leader' ? '/pessoas' : '/tarefas/minhas');
   } catch (err) {
     console.error(err);
     res.render('auth/login', { title: 'Entrar no sistema', erro: 'Erro ao entrar. Tente novamente.' });
