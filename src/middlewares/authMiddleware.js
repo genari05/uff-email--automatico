@@ -26,7 +26,15 @@ async function requireAuth(req, res, next) {
   // de conexão com o Supabase. Nesse caso NÃO desloga a pessoa, só
   // avisa que deu um erro passageiro (o cookie continua valendo).
   try {
-    const user = await userModel.findById(payload.userId);
+    // Usuário e GTs em paralelo (antes eram 2 consultas em fila, o que
+    // somava latência em TODA troca de aba).
+    const [user, gtsDaPessoa] = await Promise.all([
+      userModel.findById(payload.userId),
+      gtMembershipModel.listApprovedByUser(payload.userId).catch((errGt) => {
+        console.error('Erro ao carregar GTs da pessoa (ignorado):', errGt.message);
+        return [];
+      }),
+    ]);
 
     if (!user || !user.has_access) {
       res.clearCookie('token');
@@ -39,12 +47,7 @@ async function requireAuth(req, res, next) {
     // GTs aprovados da pessoa + qual está ativo agora. O GT ativo
     // vale tanto pro trocador da sidebar quanto pro isolamento de
     // dados (pessoas, e-mail, etc só mostram gente do GT ativo).
-    try {
-      req.meusGts = await gtMembershipModel.listApprovedByUser(user.id);
-    } catch (errGt) {
-      console.error('Erro ao carregar GTs da pessoa (ignorado):', errGt.message);
-      req.meusGts = [];
-    }
+    req.meusGts = gtsDaPessoa;
     res.locals.meusGtsSidebar = req.meusGts;
 
     const slugCookie = req.cookies?.gt_ativo || null;
@@ -64,6 +67,7 @@ async function requireAuth(req, res, next) {
     req.gtAtivo = membershipAtiva ? membershipAtiva.gts : null;
     req.gtAtivoMembership = membershipAtiva || null;
     res.locals.gtAtivo = req.gtAtivo;
+    res.locals.gtAtivoMembership = req.gtAtivoMembership;
     res.locals.gtAtivoSlug = req.gtAtivo?.slug || null;
 
     next();

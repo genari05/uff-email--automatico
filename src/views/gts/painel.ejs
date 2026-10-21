@@ -16,7 +16,8 @@
               <% if (gt.description) { %><p style="color: var(--color-text-muted); margin:4px 0 0;"><%= gt.description %></p><% } %>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <a href="/gts/<%= gt.slug %>/tarefas/nova"><button type="button">Nova tarefa</button></a>
+              <a href="/gts/<%= gt.slug %>/tarefas/nova"><button type="button">+ Nova tarefa</button></a>
+              <a href="/gts/<%= gt.slug %>/tarefas/nova?outro=1"><button type="button" class="btn-secundario">➜ Enviar tarefa para outro GT</button></a>
               <% if (gtMembership.role === 'leader') { %>
                 <a href="/gts/<%= gt.slug %>/tarefas/aprovacao"><button type="button" class="btn-nao">Aprovar tarefas</button></a>
               <% } %>

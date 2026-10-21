@@ -15,7 +15,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '..', 'public')));
+try { app.use(require('compression')()); } catch (e) { /* compression opcional */ }
+app.use(express.static(path.join(__dirname, '..', 'public'), { maxAge: '1h' }));
 
 app.use((req, res, next) => {
   res.locals.currentPath = req.path;
