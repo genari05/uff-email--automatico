@@ -59,7 +59,8 @@ async function markAsVerified(id) {
 }
 
 async function listAll({ onlyVerified = false } = {}) {
-  let query = supabase.from(TABLE).select('*').order('name', { ascending: true });
+  // people_visiveis = sem a conta de TI oculta (lista de pessoas, destinatários, responsáveis)
+  let query = supabase.from('people_visiveis').select('*').order('name', { ascending: true });
   if (onlyVerified) query = query.eq('verified', true);
 
   const { data, error } = await query;
@@ -68,7 +69,7 @@ async function listAll({ onlyVerified = false } = {}) {
 }
 
 async function findManyByIds(ids) {
-  const { data, error } = await supabase.from(TABLE).select('*').in('id', ids);
+  const { data, error } = await supabase.from('people_visiveis').select('*').in('id', ids);
   if (error) throw error;
   return data;
 }

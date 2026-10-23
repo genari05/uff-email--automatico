@@ -12,6 +12,7 @@ const {
 
 // GET /tarefas/nova
 async function formNovaTarefa(req, res) {
+  if (req.gtAtivo) return res.redirect(`/gts/${req.gtAtivo.slug}/tarefas/nova`);
   const [pessoas, templates] = await Promise.all([
     personModel.listAll({ onlyVerified: true }),
     emailModel.listTemplates(),
@@ -47,6 +48,17 @@ async function criarTarefa(req, res) {
       return res.render('tasks/nova', {
         title: 'Nova tarefa',
         erro: 'Preencha responsável, título e prazo de entrega.',
+        pessoas,
+        templates,
+        today,
+      });
+    }
+
+    // O responsável precisa estar na lista visível (conta de TI oculta nunca entra)
+    if (!pessoas.some((p) => p.id === responsibleId)) {
+      return res.render('tasks/nova', {
+        title: 'Nova tarefa',
+        erro: 'Responsável inválido.',
         pessoas,
         templates,
         today,
@@ -185,6 +197,7 @@ async function criarTarefa(req, res) {
 
 // GET /tarefas -> painel geral da equipe
 async function listarTarefas(req, res) {
+  if (req.gtAtivo) return res.redirect(`/gts/${req.gtAtivo.slug}`);
   const [tarefas, atividades] = await Promise.all([
     taskModel.listVisible(),
     activityModel.listRecent(30),
@@ -201,7 +214,9 @@ async function listarTarefas(req, res) {
 
 // GET /tarefas/minhas -> tarefas da pessoa logada
 async function minhasTarefas(req, res) {
-  const tarefas = await taskModel.listByResponsible(req.user.person_id);
+  let tarefas = await taskModel.listByResponsible(req.user.person_id);
+  // Só as tarefas do GT que está ativo (as antigas, sem GT, continuam aparecendo)
+  if (req.gtAtivo) tarefas = tarefas.filter((t) => !t.gt_id || t.gt_id === req.gtAtivo.id);
   res.render('tasks/minhas', { title: 'Minhas tarefas', tarefas });
 }
 
@@ -235,6 +250,9 @@ async function concluirTarefa(req, res) {
 
 // GET /tarefas/aprovacao -> painel do líder (tarefas aguardando aprovação)
 async function listarAprovacao(req, res) {
+  if (req.gtAtivo && req.gtAtivoMembership?.role === 'leader') {
+    return res.redirect(`/gts/${req.gtAtivo.slug}/tarefas/aprovacao`);
+  }
   const tarefas = await taskModel.listAwaitingApproval();
   res.render('tasks/aprovacao', { title: 'Aprovar tarefas', tarefas });
 }
@@ -294,7 +312,8 @@ async function resolverAprovacao(req, res) {
 
 // GET /tarefas/desempenho -> estatísticas gerais da equipe (só líder)
 async function desempenho(req, res) {
-  const tarefas = await taskModel.listAllForStats();
+  let tarefas = await taskModel.listAllForStats();
+  if (req.gtAtivo) tarefas = tarefas.filter((t) => t.gt_id === req.gtAtivo.id);
 
   const resumo = {
     total: tarefas.length,
@@ -343,7 +362,8 @@ async function excluirTarefa(req, res) {
 
 // GET /tarefas/lembretes -> controle de status de envio dos lembretes
 async function statusLembretes(req, res) {
-  const tarefas = await taskModel.listWithReminder();
+  let tarefas = await taskModel.listWithReminder();
+  if (req.gtAtivo) tarefas = tarefas.filter((t) => t.gt_id === req.gtAtivo.id);
   const agora = new Date();
 
   const comStatus = tarefas.map((t) => {

@@ -44,7 +44,7 @@ async function login(req, res) {
 
     // Líder cai na lista de pessoas (visão administrativa); membro,
     // que não tem mais acesso a essa tela, cai nas tarefas dele.
-    res.redirect(user.role === 'leader' ? '/pessoas' : '/tarefas/minhas');
+    res.redirect(['leader', 'ti'].includes(user.role) ? '/pessoas' : '/tarefas/minhas');
   } catch (err) {
     console.error(err);
     res.render('auth/login', { title: 'Entrar no sistema', erro: 'Erro ao entrar. Tente novamente.' });

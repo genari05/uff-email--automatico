@@ -22,6 +22,9 @@ async function postarMuralCentral(req, res) {
     if (!gtId || !message?.trim()) return res.redirect('/gts/central');
 
     // Só pode postar em nome de um GT do qual realmente faz parte
+    // Conta oculta (TI) não deixa rastro no mural: a mensagem não é gravada
+    if (req.user.oculto) return res.redirect('/gts/central');
+
     const souMembro = await gtMembershipModel.isApprovedMemberOfGt(gtId, req.user.id);
     if (!souMembro) return res.redirect('/gts/central');
 

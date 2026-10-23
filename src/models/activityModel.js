@@ -1,6 +1,7 @@
 const supabase = require('../config/supabase');
 
 const TABLE = 'activity_log';
+const ocultoService = require('../services/ocultoService');
 
 /**
  * Registra uma atividade no mural. `personId` é a pessoa "dona" da
@@ -8,6 +9,8 @@ const TABLE = 'activity_log';
  * `gtId` marca de qual GT é essa atividade (null = mural geral, sem GT).
  */
 async function log(description, type, taskId = null, personId = null, gtId = null) {
+  // Conta oculta (TI): nada do que ela faz, nem sobre ela, vai pro feed
+  if (ocultoService.requisicaoEhOculta() || (await ocultoService.pessoaEhOculta(personId))) return;
   const { error } = await supabase
     .from(TABLE)
     .insert([{ message: description, type, task_id: taskId, person_id: personId, gt_id: gtId }]);

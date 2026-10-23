@@ -2,6 +2,20 @@ const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const userModel = require('../models/userModel');
 const gtMembershipModel = require('../models/gtMembershipModel');
+const gtModel = require('../models/gtModel');
+const ocultoService = require('../services/ocultoService');
+
+/**
+ * Conta de TI: o papel real no banco é 'ti', mas pro resto do sistema
+ * ela passa em TODAS as checagens de líder (role === 'leader'). O papel
+ * real fica em user.papelReal / user.isTi.
+ */
+function aplicarPapelTi(user) {
+  user.papelReal = user.role;
+  user.isTi = user.role === 'ti';
+  if (user.isTi) user.role = 'leader';
+  return user;
+}
 
 /**
  * Garante que existe um usuário logado E com has_access = true.
@@ -26,24 +40,37 @@ async function requireAuth(req, res, next) {
   // de conexão com o Supabase. Nesse caso NÃO desloga a pessoa, só
   // avisa que deu um erro passageiro (o cookie continua valendo).
   try {
-    const user = await userModel.findById(payload.userId);
+    // Usuário e GTs em paralelo (antes eram 2 consultas em fila, o que
+    // somava latência em TODA troca de aba).
+    const [user, gtsDaPessoa] = await Promise.all([
+      userModel.findById(payload.userId),
+      gtMembershipModel.listApprovedByUser(payload.userId).catch((errGt) => {
+        console.error('Erro ao carregar GTs da pessoa (ignorado):', errGt.message);
+        return [];
+      }),
+    ]);
 
     if (!user || !user.has_access) {
       res.clearCookie('token');
       return res.redirect('/auth/login');
     }
 
+    aplicarPapelTi(user);
     req.user = user; // disponível nos controllers/views
     res.locals.currentUser = user;
+    if (user.oculto) ocultoService.marcarRequisicaoOculta(); // ações dela não vão pro feed
 
     // GTs aprovados da pessoa + qual está ativo agora. O GT ativo
     // vale tanto pro trocador da sidebar quanto pro isolamento de
     // dados (pessoas, e-mail, etc só mostram gente do GT ativo).
-    try {
-      req.meusGts = await gtMembershipModel.listApprovedByUser(user.id);
-    } catch (errGt) {
-      console.error('Erro ao carregar GTs da pessoa (ignorado):', errGt.message);
-      req.meusGts = [];
+    req.meusGts = gtsDaPessoa;
+    // TI enxerga todos os GTs como líder, sem precisar ser membro de nenhum
+    if (user.isTi) {
+      const todos = await gtModel.listAll();
+      req.meusGts = todos.map((gt) => ({
+        id: `ti-${gt.id}`, gt_id: gt.id, user_id: user.id,
+        role: 'leader', status: 'approved', gts: gt,
+      }));
     }
     res.locals.meusGtsSidebar = req.meusGts;
 
@@ -64,6 +91,7 @@ async function requireAuth(req, res, next) {
     req.gtAtivo = membershipAtiva ? membershipAtiva.gts : null;
     req.gtAtivoMembership = membershipAtiva || null;
     res.locals.gtAtivo = req.gtAtivo;
+    res.locals.gtAtivoMembership = req.gtAtivoMembership;
     res.locals.gtAtivoSlug = req.gtAtivo?.slug || null;
 
     next();
@@ -94,6 +122,7 @@ async function optionalAuth(req, res, next) {
     const user = await userModel.findById(payload.userId);
 
     if (user && user.has_access) {
+      aplicarPapelTi(user);
       req.user = user;
       res.locals.currentUser = user;
     }
@@ -103,4 +132,4 @@ async function optionalAuth(req, res, next) {
   next();
 }
 
-module.exports = { requireAuth, optionalAuth };
+module.exports = { requireAuth, optionalAuth, aplicarPapelTi };

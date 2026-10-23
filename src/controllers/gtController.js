@@ -20,8 +20,8 @@ async function listarGts(req, res) {
 
   const gtsComSituacao = gts.map((gt, i) => ({
     ...gt,
-    minhaSituacao: situacoes[i] ? situacoes[i].status : null, // null = nunca pediu entrada
-    meuPapel: situacoes[i]?.status === 'approved' ? situacoes[i].role : null,
+    minhaSituacao: req.user.isTi ? 'approved' : (situacoes[i] ? situacoes[i].status : null), // null = nunca pediu entrada
+    meuPapel: req.user.isTi ? 'leader' : (situacoes[i]?.status === 'approved' ? situacoes[i].role : null),
   }));
 
   const gtAtivoSlug = req.cookies?.gt_ativo || null;
@@ -63,7 +63,9 @@ async function pedirEntrada(req, res) {
 
 // GET /gts/pendentes -> pedidos de entrada pendentes nos GTs que a pessoa lidera
 async function listarPendentes(req, res) {
-  const pedidos = await gtMembershipModel.listPendingForLeaderGts(req.user.id);
+  const pedidos = req.user.isTi
+    ? await gtMembershipModel.listPendingAll()
+    : await gtMembershipModel.listPendingForLeaderGts(req.user.id);
   res.render('gts/pendentes', { title: 'Pedidos de entrada em GTs', pedidos });
 }
 
@@ -77,7 +79,8 @@ async function resolverPendente(req, res) {
     if (!membership) return res.redirect('/gts/pendentes');
 
     // Só o líder do GT em questão pode resolver esse pedido específico
-    const souLiderDesseGt = await gtMembershipModel.isApprovedLeaderOfGt(membership.gt_id, req.user.id);
+    const souLiderDesseGt = req.user.isTi
+      || await gtMembershipModel.isApprovedLeaderOfGt(membership.gt_id, req.user.id);
     if (!souLiderDesseGt) {
       return res.status(403).render('errors/acesso-negado', {
         title: 'Acesso negado',
@@ -113,7 +116,8 @@ async function ativarGt(req, res) {
     const gt = await gtModel.findBySlug(req.params.slug);
     if (!gt) return res.redirect('/gts');
 
-    const souMembro = await gtMembershipModel.isApprovedMemberOfGt(gt.id, req.user.id);
+    const souMembro = req.user.isTi
+      || await gtMembershipModel.isApprovedMemberOfGt(gt.id, req.user.id);
     if (!souMembro) return res.redirect('/gts');
 
     res.cookie('gt_ativo', gt.slug, {

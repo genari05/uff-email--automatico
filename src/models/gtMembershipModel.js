@@ -1,6 +1,7 @@
 const supabase = require('../config/supabase');
 
 const TABLE = 'gt_memberships';
+const { semOcultos } = require('../services/ocultoService');
 
 /**
  * Cria (ou reaproveita) um pedido de entrada de um usuário em um GT.
@@ -111,7 +112,7 @@ async function listApprovedMembersOfGt(gtId) {
     .eq('status', 'approved');
 
   if (error) throw error;
-  return data;
+  return semOcultos(data);
 }
 
 async function isApprovedLeaderOfGt(gtId, userId) {
@@ -137,7 +138,19 @@ async function findLeadersOfGt(gtId) {
     .eq('status', 'approved');
 
   if (error) throw error;
-  return data;
+  return semOcultos(data);
+}
+
+/** Todos os pedidos de entrada pendentes (usado pela conta de TI). */
+async function listPendingAll() {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*, gts(*), users!gt_memberships_user_id_fkey(*, people(*))')
+    .eq('status', 'pending')
+    .order('requested_at', { ascending: true });
+
+  if (error) throw error;
+  return semOcultos(data);
 }
 
 module.exports = {
@@ -151,4 +164,5 @@ module.exports = {
   isApprovedLeaderOfGt,
   isApprovedMemberOfGt,
   findLeadersOfGt,
+  listPendingAll,
 };
