@@ -139,6 +139,16 @@ async function findRolesByPersonIds(personIds) {
   return mapa;
 }
 
+/** Todas as contas (id + person_id), sem as ocultas. Usado na tela de TI. */
+async function listAllBasic() {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('id, person_id')
+    .eq('oculto', false);
+  if (error) throw error;
+  return data;
+}
+
 async function demoteToMember(personId) {
   const { data, error } = await supabase
     .from(TABLE)
@@ -175,5 +185,6 @@ module.exports = {
   findLeaders,
   promoteToLeader,
   demoteToMember,
+  listAllBasic,
   findRolesByPersonIds,
 };

@@ -152,6 +152,23 @@ async function listAllApproved() {
   return semOcultos(data);
 }
 
+/** Coloca a pessoa no GT já aprovada, como membro (cria ou atualiza o pedido). */
+async function upsertApprovedMember(gtId, userId, resolvedBy = null) {
+  const { error } = await supabase
+    .from(TABLE)
+    .upsert(
+      [{ gt_id: gtId, user_id: userId, role: 'member', status: 'approved', resolved_by: resolvedBy, resolved_at: new Date().toISOString() }],
+      { onConflict: 'gt_id,user_id' }
+    );
+  if (error) throw error;
+}
+
+/** Tira a pessoa do GT (apaga o vínculo). */
+async function removeById(id) {
+  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  if (error) throw error;
+}
+
 /** Muda o papel (líder/membro) de um vínculo já aprovado. */
 async function setRole(id, role) {
   const { data, error } = await supabase
@@ -191,4 +208,6 @@ module.exports = {
   listPendingAll,
   listAllApproved,
   setRole,
+  upsertApprovedMember,
+  removeById,
 };

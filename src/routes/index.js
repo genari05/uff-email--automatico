@@ -11,5 +11,6 @@ router.use('/tarefas', require('./taskRoutes'));
 router.use('/cron', require('./cronRoutes'));
 router.use('/perfil', require('./profileRoutes'));
 router.use('/gts', require('./gtRoutes'));
+router.use('/ti', require('./tiRoutes'));
 
 module.exports = router;
