@@ -33,6 +33,9 @@ router.get('/:slug/tarefas/nova', gtTaskController.formNovaTarefaGt);
 router.post('/:slug/tarefas', gtTaskController.criarTarefaGt);
 router.post('/:slug/tarefas/:id/concluir', gtTaskController.concluirTarefaGt);
 
+// Dar/tirar liderança dentro do GT: só o líder DAQUELE GT
+router.post('/:slug/equipe/:membershipId/papel', requireGtLeader, gtTaskController.alterarPapelNoGt);
+
 // Aprovação de tarefas cross-GT: só o líder DAQUELE GT de destino
 router.get('/:slug/tarefas/aprovacao', requireGtLeader, gtTaskController.listarAprovacaoGt);
 router.post('/:slug/tarefas/:id/aprovar', requireGtLeader, gtTaskController.resolverAprovacaoGt);

@@ -39,12 +39,57 @@ async function painelGt(req, res) {
   const papeis = await userModel.findRolesByPersonIds(idsUnicos);
   const atividadesComPapel = atividades.map((a) => ({ ...a, papel: papeis[a.person_id] || 'member' }));
 
+  const equipe = (await gtMembershipModel.listApprovedMembersOfGt(gt.id))
+    .filter((m) => m.users?.people)
+    .sort((a, b) => (a.role === b.role ? a.users.people.name.localeCompare(b.users.people.name) : a.role === 'leader' ? -1 : 1));
+
   res.render('gts/painel', {
     title: gt.name,
     gt,
     tarefas,
     atividades: atividadesComPapel,
+    equipe,
+    aviso: req.query.ok || null,
   });
+}
+
+// POST /gts/:slug/equipe/:membershipId/papel -> líder do GT dá/tira a liderança
+async function alterarPapelNoGt(req, res) {
+  const gt = req.gt;
+  const voltar = (msg) => res.redirect(`/gts/${gt.slug}?ok=${encodeURIComponent(msg)}#equipe`);
+  try {
+    const { membershipId } = req.params;
+    const { papel } = req.body; // 'leader' | 'member'
+    if (!['leader', 'member'].includes(papel)) return voltar('Papel inválido.');
+
+    const alvo = await gtMembershipModel.findById(membershipId);
+    if (!alvo || alvo.gt_id !== gt.id || alvo.status !== 'approved') return voltar('Pessoa não encontrada neste GT.');
+    if (alvo.role === papel) return voltar('Nada mudou.');
+
+    if (papel === 'member') {
+      // O GT nunca pode ficar sem líder
+      const lideres = await gtMembershipModel.findLeadersOfGt(gt.id);
+      if (lideres.length <= 1) return voltar('O GT precisa ter pelo menos um líder. Dê a liderança a outra pessoa antes.');
+    }
+
+    await gtMembershipModel.setRole(membershipId, papel);
+
+    const nome = alvo.users?.people?.name || 'Alguém';
+    await activityModel.log(
+      papel === 'leader'
+        ? `${nome} agora é líder do ${gt.name}`
+        : `${nome} deixou de ser líder do ${gt.name}`,
+      'gt_role_changed',
+      null,
+      alvo.users?.person_id || null,
+      gt.id
+    );
+
+    voltar(papel === 'leader' ? `${nome} agora é líder do ${gt.name}.` : `${nome} voltou a ser membro.`);
+  } catch (err) {
+    console.error(err);
+    voltar('Erro ao alterar a liderança. Tente de novo.');
+  }
 }
 
 // GET /gts/:slug/tarefas/nova
@@ -120,7 +165,8 @@ async function criarTarefaGt(req, res) {
     // Dentro do próprio GT: ativa direto se quem cria é líder DAQUELE GT.
     // Entre GTs: sempre precisa da aprovação do líder do GT de destino,
     // não importa quem criou.
-    const ativaDireto = !crossGt && req.gtMembership.role === 'leader';
+    // Sem aprovação: qualquer pessoa atribui direto (inclusive pra outro GT)
+    const ativaDireto = true;
 
     const task = await taskModel.create({
       title: title.trim(),
@@ -292,4 +338,5 @@ module.exports = {
   concluirTarefaGt,
   listarAprovacaoGt,
   resolverAprovacaoGt,
+  alterarPapelNoGt,
 };

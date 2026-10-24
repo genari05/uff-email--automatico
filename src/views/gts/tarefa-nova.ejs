@@ -13,18 +13,20 @@
           <a href="/gts/<%= gt.slug %>" class="voltar-link">← Voltar</a>
 
           <p class="alerta">
-            Se o GT de destino for diferente do <b><%= gt.name %></b>, a tarefa só entra pra valer depois que o líder de lá aprovar.
-            <% if (gtMembership.role !== 'leader') { %> Como você não é líder deste GT, mesmo dentro dele a tarefa fica aguardando aprovação.<% } %>
+            Qualquer pessoa pode atribuir tarefas, inclusive pra outro GT: a tarefa já vale na hora e o responsável é avisado por e-mail.
           </p>
           <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
 
           <form method="POST" action="/gts/<%= gt.slug %>/tarefas" class="form" style="max-width: none;">
-            <label for="targetGtId">GT de destino</label>
-            <select id="targetGtId" name="targetGtId" required>
-              <% gts.forEach(g => { %>
-                <option value="<%= g.id %>" <%= g.id === gt.id ? 'selected' : '' %>><%= g.name %><%= g.id === gt.id ? ' (este GT)' : '' %></option>
-              <% }) %>
-            </select>
+            <div class="gt-destino-box">
+              <label for="targetGtId" style="margin-top:0;">Para qual GT vai essa tarefa?</label>
+              <select id="targetGtId" name="targetGtId" required>
+                <% gts.forEach(g => { %>
+                  <option value="<%= g.id %>" <%= g.id === gt.id ? 'selected' : '' %>><%= g.name %><%= g.id === gt.id ? ' (este GT)' : '' %></option>
+                <% }) %>
+              </select>
+              <small>Escolha outro GT pra enviar a tarefa pra lá. Não precisa de aprovação.</small>
+            </div>
 
             <label for="responsibleId">Responsável</label>
             <select id="responsibleId" name="responsibleId" required>
@@ -96,6 +98,11 @@
   </div>
 
   <script>
+    if (new URLSearchParams(location.search).get('outro') === '1') {
+      const sel = document.getElementById('targetGtId');
+      const outro = Array.from(sel.options).find((o) => !o.text.includes('(este GT)'));
+      if (outro) sel.value = outro.value;
+    }
     const PORTA_MEMBROS_POR_GT = <%- JSON.stringify(porGt) %>;
 
     const targetGtSelect = document.getElementById('targetGtId');

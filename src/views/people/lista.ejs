@@ -11,7 +11,9 @@
       <div class="app-content">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom: 16px;">
-            <% if (typeof gtAtivo !== 'undefined' && gtAtivo) { %>
+            <% if (typeof visaoGeral !== 'undefined' && visaoGeral) { %>
+              <span class="badge badge-lider">Visão geral · todas as pessoas do site</span>
+            <% } else if (typeof gtAtivo !== 'undefined' && gtAtivo) { %>
               <span class="badge" style="background: <%= gtAtivo.color %>1a; color: <%= gtAtivo.color %>; border:none;">
                 Pessoas do <%= gtAtivo.name %>
               </span>
@@ -22,7 +24,10 @@
           <% if (typeof erro !== 'undefined' && erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
           <% if (typeof sucesso !== 'undefined' && sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
 
-          <% if (typeof gtAtivo === 'undefined' || !gtAtivo) { %>
+          <% const vg = typeof visaoGeral !== 'undefined' && visaoGeral; %>
+          <% const gtsDe = (typeof gtsPorPessoa !== 'undefined' && gtsPorPessoa) ? gtsPorPessoa : {}; %>
+          <% const papeisDe = (typeof papeis !== 'undefined' && papeis) ? papeis : {}; %>
+          <% if (!vg && (typeof gtAtivo === 'undefined' || !gtAtivo)) { %>
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
               <% if (typeof meusGts !== 'undefined' && meusGts.length > 1) { %>
@@ -44,7 +49,7 @@
           <% } else if (pessoas.length === 0) { %>
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
-              <h3>Nenhuma pessoa no <%= gtAtivo.name %> ainda</h3>
+              <h3>Nenhuma pessoa <%= vg ? 'cadastrada' : 'no ' + gtAtivo.name %> ainda</h3>
               <p>Cadastre a primeira pessoa, ou aprove pedidos de entrada nesse GT, pra montar a equipe por aqui.</p>
             </div>
           <% } else { %>
@@ -54,6 +59,8 @@
                   <tr>
                     <th>Nome</th>
                     <th>E-mail</th>
+                    <% if (vg) { %><th>GTs</th><% } %>
+                    <th>Liderança</th>
                     <th>Status</th>
                     <th>Cadastrado em</th>
                     <th>Ações</th>
@@ -78,6 +85,24 @@
                         </div>
                       </td>
                       <td data-label="E-mail"><span class="stat-mono"><%= p.email %></span></td>
+                      <% if (vg) { %>
+                        <td data-label="GTs">
+                          <% (gtsDe[p.id] || []).forEach(g => { %>
+                            <span class="badge" style="background: <%= g.color %>1a; color: <%= g.color %>; border:none; margin:0 4px 4px 0;"><%= g.name.replace('GT ', '') %><%= g.papel === 'leader' ? ' ★' : '' %></span>
+                          <% }) %>
+                          <% if (!(gtsDe[p.id] || []).length) { %><span style="color:var(--color-text-muted); font-size:12.5px;">sem GT</span><% } %>
+                        </td>
+                      <% } %>
+                      <td data-label="Liderança">
+                        <% const ehLiderGeral = papeisDe[p.id] === 'leader'; %>
+                        <span class="badge <%= ehLiderGeral ? 'badge-lider' : '' %>"><%= ehLiderGeral ? 'Líder geral' : 'Membro' %></span>
+                        <% if (souLider && !souEu) { %>
+                          <form method="POST" action="/pessoas/<%= p.id %>/papel" style="display:inline;">
+                            <input type="hidden" name="papel" value="<%= ehLiderGeral ? 'member' : 'leader' %>">
+                            <button type="submit" class="btn-link-inline"><%= ehLiderGeral ? 'Tirar liderança' : 'Tornar líder' %></button>
+                          </form>
+                        <% } %>
+                      </td>
                       <td data-label="Status">
                         <span class="badge <%= p.verified ? 'badge-sucesso' : 'badge-pendente' %>">
                           <%= p.verified ? 'Verificado' : 'Pendente' %>

@@ -16,11 +16,40 @@
               <% if (gt.description) { %><p style="color: var(--color-text-muted); margin:4px 0 0;"><%= gt.description %></p><% } %>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <a href="/gts/<%= gt.slug %>/tarefas/nova"><button type="button">Nova tarefa</button></a>
-              <% if (gtMembership.role === 'leader') { %>
-                <a href="/gts/<%= gt.slug %>/tarefas/aprovacao"><button type="button" class="btn-nao">Aprovar tarefas</button></a>
-              <% } %>
+              <a href="/gts/<%= gt.slug %>/tarefas/nova"><button type="button">+ Nova tarefa</button></a>
+              <a href="/gts/<%= gt.slug %>/tarefas/nova?outro=1"><button type="button" class="btn-secundario">➜ Enviar tarefa para outro GT</button></a>
             </div>
+          </div>
+        </div>
+
+        <div class="card" id="equipe">
+          <h2 style="margin-top:0;">Equipe do <%= gt.name %></h2>
+          <% if (typeof aviso !== 'undefined' && aviso) { %><p class="alerta alerta-sucesso"><%= aviso %></p><% } %>
+          <% if (gtMembership.role === 'leader') { %>
+            <p style="color: var(--color-text-muted); margin-top:0;">Como líder, você pode dar a liderança deste GT para outra pessoa (ou tirar). O GT sempre precisa ter pelo menos um líder.</p>
+          <% } %>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th>Pessoa</th><th>Papel</th><% if (gtMembership.role === 'leader') { %><th>Ação</th><% } %></tr></thead>
+              <tbody>
+                <% equipe.forEach(m => { %>
+                  <tr>
+                    <td data-label="Pessoa"><%= m.users.people.name %><% if (m.users.people.id === currentUser.person_id) { %> <span class="badge badge-lider">você</span><% } %></td>
+                    <td data-label="Papel"><span class="badge <%= m.role === 'leader' ? 'badge-lider' : '' %>"><%= m.role === 'leader' ? 'Líder' : 'Membro' %></span></td>
+                    <% if (gtMembership.role === 'leader') { %>
+                      <td data-label="Ação">
+                        <form method="POST" action="/gts/<%= gt.slug %>/equipe/<%= m.id %>/papel" style="display:inline;">
+                          <input type="hidden" name="papel" value="<%= m.role === 'leader' ? 'member' : 'leader' %>">
+                          <button type="submit" class="<%= m.role === 'leader' ? 'btn-nao' : 'btn-sim' %>" style="padding:5px 10px; font-size:12px;">
+                            <%= m.role === 'leader' ? 'Tirar liderança' : 'Tornar líder' %>
+                          </button>
+                        </form>
+                      </td>
+                    <% } %>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -31,7 +60,7 @@
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
               <h3>Nenhuma tarefa por aqui ainda</h3>
-              <p>Crie uma tarefa pra alguém deste GT, ou para outro GT (com aprovação do líder de lá).</p>
+              <p>Crie uma tarefa pra alguém deste GT ou de outro GT. Não precisa de aprovação.</p>
             </div>
           <% } else { %>
             <div class="table-wrapper">

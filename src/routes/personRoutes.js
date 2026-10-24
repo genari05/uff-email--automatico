@@ -28,4 +28,7 @@ router.post('/:id/excluir', requireAuth, bloquearPessoaOculta, requireOwnerOrLea
 // link do e-mail - não existe mais um jeito manual de "forçar".
 router.post('/:id/reenviar-verificacao', requireAuth, bloquearPessoaOculta, requireLeader, personController.reenviarVerificacao);
 
+// Dar/tirar a liderança geral: só quem já é líder
+router.post('/:id/papel', requireAuth, bloquearPessoaOculta, requireLeader, personController.alterarPapelGeral);
+
 module.exports = router;

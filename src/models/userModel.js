@@ -139,6 +139,19 @@ async function findRolesByPersonIds(personIds) {
   return mapa;
 }
 
+async function demoteToMember(personId) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ role: 'member' })
+    .eq('person_id', personId)
+    .eq('role', 'leader')
+    .select()
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 async function findById(id) {
   const { data, error } = await supabase
     .from(TABLE)
@@ -161,5 +174,6 @@ module.exports = {
   findById,
   findLeaders,
   promoteToLeader,
+  demoteToMember,
   findRolesByPersonIds,
 };

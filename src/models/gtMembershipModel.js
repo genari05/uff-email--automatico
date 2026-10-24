@@ -141,6 +141,30 @@ async function findLeadersOfGt(gtId) {
   return semOcultos(data);
 }
 
+/** Todos os vínculos aprovados, com o GT (usado na visão geral da TI). */
+async function listAllApproved() {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*, gts(*), users!gt_memberships_user_id_fkey(person_id, oculto)')
+    .eq('status', 'approved');
+
+  if (error) throw error;
+  return semOcultos(data);
+}
+
+/** Muda o papel (líder/membro) de um vínculo já aprovado. */
+async function setRole(id, role) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ role })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 /** Todos os pedidos de entrada pendentes (usado pela conta de TI). */
 async function listPendingAll() {
   const { data, error } = await supabase
@@ -165,4 +189,6 @@ module.exports = {
   isApprovedMemberOfGt,
   findLeadersOfGt,
   listPendingAll,
+  listAllApproved,
+  setRole,
 };

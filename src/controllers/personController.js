@@ -141,6 +141,32 @@ async function verificarEmail(req, res) {
 // do líder). Isolado por GT: só aparece quem é membro aprovado do
 // mesmo GT que está ativo pra quem está olhando.
 async function listarPessoas(req, res) {
+  // TI: visão geral de TODAS as pessoas, com os GTs de cada uma
+  if (req.user.isTi) {
+    try {
+      const [pessoas, vinculos] = await Promise.all([
+        personModel.listAll(),
+        gtMembershipModel.listAllApproved(),
+      ]);
+      const gtsPorPessoa = {};
+      vinculos.forEach((v) => {
+        const pid = v.users?.person_id;
+        if (!pid) return;
+        (gtsPorPessoa[pid] = gtsPorPessoa[pid] || []).push({ ...v.gts, papel: v.role });
+      });
+      const papeis = await userModel.findRolesByPersonIds(pessoas.map((p) => p.id));
+      return res.render('people/lista', {
+        title: 'Pessoas cadastradas',
+        pessoas, papeis, gtsPorPessoa,
+        gtAtivo: null, visaoGeral: true,
+        meusGts: req.meusGts, erro: null, sucesso: req.query.ok || null,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [], gtAtivo: null, visaoGeral: true, meusGts: req.meusGts, erro: 'Erro ao carregar as pessoas.', sucesso: null });
+    }
+  }
+
   // Sem GT ativo (a pessoa participa de mais de um GT e ainda não
   // escolheu qual, ou não participa de nenhum) - pede pra escolher
   // em vez de mostrar tudo misturado.
@@ -161,16 +187,40 @@ async function listarPessoas(req, res) {
       .filter(Boolean)
       .sort((a, b) => a.name.localeCompare(b.name));
 
+    const papeis = await userModel.findRolesByPersonIds(pessoas.map((p) => p.id));
+
     res.render('people/lista', {
       title: 'Pessoas cadastradas',
       pessoas,
+      papeis,
       meusGts: req.meusGts,
       erro: null,
-      sucesso: null,
+      sucesso: req.query.ok || null,
     });
   } catch (err) {
     console.error(err);
     res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [], meusGts: req.meusGts, erro: null, sucesso: null });
+  }
+}
+
+// POST /pessoas/:id/papel -> líder geral dá ou tira a liderança GERAL de alguém
+async function alterarPapelGeral(req, res) {
+  try {
+    const { id } = req.params;
+    const { papel } = req.body; // 'leader' | 'member'
+
+    if (id === req.user.person_id) {
+      return res.redirect('/pessoas?ok=' + encodeURIComponent('Você não pode mudar a sua própria liderança.'));
+    }
+    if (papel === 'leader') {
+      await userModel.promoteToLeader(id);
+    } else {
+      await userModel.demoteToMember(id);
+    }
+    res.redirect('/pessoas?ok=' + encodeURIComponent(papel === 'leader' ? 'Liderança concedida.' : 'Liderança removida.'));
+  } catch (err) {
+    console.error(err);
+    res.redirect('/pessoas');
   }
 }
 
@@ -300,4 +350,5 @@ module.exports = {
   excluirPessoa,
   reenviarVerificacao,
   marcarVerificadoManualmente,
+  alterarPapelGeral,
 };

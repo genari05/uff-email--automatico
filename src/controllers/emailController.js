@@ -6,6 +6,8 @@ const { sendBulkEmail } = require('../services/emailService');
 // Pessoas do GT ativo de quem está logado (isolamento: nunca mistura
 // gente de outro GT). Sem GT ativo escolhido, ninguém aparece.
 async function pessoasDoGtAtivo(req, { onlyVerified = false } = {}) {
+  // TI enxerga todo mundo (a própria conta oculta já fica de fora pela view)
+  if (req.user?.isTi) return personModel.listAll({ onlyVerified });
   if (!req.gtAtivo) return [];
   const membros = await gtMembershipModel.listApprovedMembersOfGt(req.gtAtivo.id);
   let pessoas = membros.map((m) => m.users?.people).filter(Boolean);
