@@ -198,7 +198,8 @@ async function criarTarefa(req, res) {
 
 // GET /tarefas -> painel geral da equipe
 async function listarTarefas(req, res) {
-  if (req.gtAtivo && !req.user.isTi) return res.redirect(`/gts/${req.gtAtivo.slug}`);
+  // O painel/mural geral mistura TODOS os GTs: só a TI vê. Os demais vão pro painel do próprio GT.
+  if (!req.user.isTi) return res.redirect(req.gtAtivo ? `/gts/${req.gtAtivo.slug}` : '/gts');
   const [tarefas, atividades] = await Promise.all([
     taskModel.listVisible(),
     activityModel.listRecent(30),

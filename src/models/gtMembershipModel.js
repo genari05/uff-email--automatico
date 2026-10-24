@@ -33,6 +33,13 @@ async function findByGtAndUser(gtId, userId) {
   return data;
 }
 
+/** Todos os vínculos da pessoa (qualquer status) numa consulta só. */
+async function listAllByUser(userId) {
+  const { data, error } = await supabase.from(TABLE).select('*').eq('user_id', userId);
+  if (error) throw error;
+  return data;
+}
+
 async function findById(id) {
   const { data, error } = await supabase
     .from(TABLE)
@@ -208,6 +215,7 @@ module.exports = {
   listPendingAll,
   listAllApproved,
   setRole,
+  listAllByUser,
   upsertApprovedMember,
   removeById,
 };

@@ -11,7 +11,8 @@ const { verificarLembretes } = require('../services/reminderService');
  * o servidor estiver "dormindo" (planos gratuitos como o Render).
  */
 router.get('/lembretes', async (req, res) => {
-  if (req.query.token !== env.cronSecret) {
+  // Sem CRON_SECRET configurada a rota fica FECHADA (antes ficava aberta pra qualquer um)
+  if (!env.cronSecret || req.query.token !== env.cronSecret) {
     return res.status(401).json({ error: 'Token inválido' });
   }
 

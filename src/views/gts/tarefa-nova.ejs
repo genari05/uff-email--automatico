@@ -110,13 +110,20 @@
 
     function atualizarResponsaveis() {
       const membros = PORTA_MEMBROS_POR_GT[targetGtSelect.value] || [];
-      responsibleSelect.innerHTML = '';
+      // Monta as opções via DOM (textContent) - nome de pessoa nunca vira HTML
+      responsibleSelect.replaceChildren();
+      const adicionar = (valor, texto) => {
+        const o = document.createElement('option');
+        o.value = valor;
+        o.textContent = texto;
+        responsibleSelect.appendChild(o);
+      };
       if (membros.length === 0) {
-        responsibleSelect.innerHTML = '<option value="">Nenhum membro aprovado nesse GT ainda</option>';
+        adicionar('', 'Nenhum membro aprovado nesse GT ainda');
         return;
       }
-      responsibleSelect.innerHTML = '<option value="">Selecione a pessoa</option>' +
-        membros.map((m) => `<option value="${m.personId}">${m.name}</option>`).join('');
+      adicionar('', 'Selecione a pessoa');
+      membros.forEach((m) => adicionar(m.personId, m.name));
     }
     targetGtSelect.addEventListener('change', atualizarResponsaveis);
     atualizarResponsaveis();

@@ -1,3 +1,4 @@
+require('./utils/asyncErrors'); // precisa vir ANTES das rotas
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -9,6 +10,7 @@ const { encontrarAla } = require('./data/alas');
 
 const app = express();
 
+app.set('trust proxy', 1); // Render fica atrás de proxy: IP real do visitante
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -29,6 +31,17 @@ app.use('/', routes);
 // 404
 app.use((req, res) => {
   res.status(404).render('errors/nao-encontrado', { title: 'Página não encontrada' });
+});
+
+// Erro inesperado em qualquer rota: página amigável em vez de travar
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('Erro não tratado em', req.method, req.originalUrl, '-', err && err.message);
+  if (res.headersSent) return;
+  res.status(500).render('errors/erro-interno', { title: 'Erro' }, (renderErr, html) => {
+    if (renderErr) return res.status(500).send('Erro interno. Tente novamente em instantes.');
+    res.send(html);
+  });
 });
 
 // "Relógio interno": confere a cada 10 minutos se algum lembrete

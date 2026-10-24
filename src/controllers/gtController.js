@@ -7,16 +7,13 @@ const {
 
 // GET /gts -> lista todos os GTs e a situação da pessoa em cada um
 async function listarGts(req, res) {
-  const [gts, minhas] = await Promise.all([
+  // Uma consulta pros GTs e outra pros vínculos (antes era 1 por GT)
+  const [gts, meusVinculos] = await Promise.all([
     gtModel.listAll(),
-    gtMembershipModel.listApprovedByUser(req.user.id),
+    gtMembershipModel.listAllByUser(req.user.id),
   ]);
-
-  // Pra saber a situação de TODOS os GTs (aprovado, pendente, ou nada
-  // ainda), não só os aprovados, busca o membership de cada um.
-  const situacoes = await Promise.all(
-    gts.map((gt) => gtMembershipModel.findByGtAndUser(gt.id, req.user.id))
-  );
+  const porGt = new Map(meusVinculos.map((v) => [v.gt_id, v]));
+  const situacoes = gts.map((gt) => porGt.get(gt.id) || null);
 
   const gtsComSituacao = gts.map((gt, i) => ({
     ...gt,

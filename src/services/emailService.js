@@ -1,5 +1,15 @@
 const env = require('../config/env');
 
+// Escapa texto vindo de usuários antes de colocar em HTML de e-mail
+// (impede que um nome/título com <tags> vire link ou conteúdo falso).
+function esc(valor) {
+  return String(valor ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 /**
  * Envio genérico de e-mail (usado por todas as funções abaixo).
  * Usa a API do Resend por HTTPS, em vez de SMTP direto - hospedagens
@@ -40,7 +50,7 @@ async function sendVerificationEmail({ to, name, token }) {
     subject: 'Confirme seu e-mail - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Olá, ${name}!</h2>
+        <h2>Olá, ${esc(name)}!</h2>
         <p>Você foi cadastrado(a) no sistema da Semana da Psicologia.</p>
         <p>Para confirmar que este é o seu e-mail, clique no botão abaixo:</p>
         <p>
@@ -69,7 +79,7 @@ async function sendPasswordResetEmail({ to, name, token }) {
     subject: 'Redefinir sua senha - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Olá, ${name}!</h2>
+        <h2>Olá, ${esc(name)}!</h2>
         <p>Recebemos um pedido pra redefinir a senha da sua conta no sistema da Semana da Psicologia.</p>
         <p>Clique no botão abaixo para criar uma senha nova:</p>
         <p>
@@ -96,7 +106,7 @@ async function sendAccessApprovedEmail({ to, name, token }) {
     subject: 'Acesso liberado - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Boas notícias, ${name}!</h2>
+        <h2>Boas notícias, ${esc(name)}!</h2>
         <p>Seu pedido de acesso ao sistema da Semana da Psicologia foi <b>aprovado</b>.</p>
         <p>Clique no botão abaixo para criar sua senha de acesso:</p>
         <p>
@@ -123,7 +133,7 @@ async function sendNewAccessRequestEmail({ to, requesterName }) {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Novo pedido de acesso</h2>
-        <p><b>${requesterName}</b> solicitou acesso ao sistema da Semana da Psicologia.</p>
+        <p><b>${esc(requesterName)}</b> solicitou acesso ao sistema da Semana da Psicologia.</p>
         <p>
           <a href="${link}"
              style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
@@ -147,7 +157,7 @@ async function sendNewLeaderRequestEmail({ to, requesterName }) {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Pedido de promoção a líder</h2>
-        <p><b>${requesterName}</b> solicitou se tornar líder do sistema da Semana da Psicologia.</p>
+        <p><b>${esc(requesterName)}</b> solicitou se tornar líder do sistema da Semana da Psicologia.</p>
         <p>
           <a href="${link}"
              style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
@@ -169,11 +179,11 @@ async function sendTaskAssignedEmail({ to, name, title, description, deadlineDat
     subject: `Nova tarefa: ${title}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Olá, ${name}!</h2>
+        <h2>Olá, ${esc(name)}!</h2>
         <p>Você recebeu uma nova tarefa no sistema da Semana da Psicologia:</p>
         <p style="padding:12px; background:#f4f6f8; border-radius:6px;">
-          <b>${title}</b><br>
-          ${description ? description.replace(/\n/g, '<br>') + '<br>' : ''}
+          <b>${esc(title)}</b><br>
+          ${description ? esc(description).replace(/\n/g, '<br>') + '<br>' : ''}
           Prazo de entrega: <b>${deadlineDate}</b>
         </p>
         <p>Acesse o sistema e vá em "Minhas tarefas" para acompanhar.</p>
@@ -202,7 +212,7 @@ async function sendTaskAwaitingApprovalEmail({ to, creatorName, responsibleName,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Nova tarefa para aprovar</h2>
-        <p><b>${creatorName}</b> quer atribuir a tarefa "<b>${title}</b>" para <b>${responsibleName}</b>.</p>
+        <p><b>${esc(creatorName)}</b> quer atribuir a tarefa "<b>${esc(title)}</b>" para <b>${esc(responsibleName)}</b>.</p>
         <p>
           <a href="${link}"
              style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
@@ -224,8 +234,8 @@ async function sendTaskDeniedEmail({ to, creatorName, responsibleName, title }) 
     subject: 'Tarefa negada - Semana da Psicologia',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Olá, ${creatorName}</h2>
-        <p>A tarefa "<b>${title}</b>" que você tentou atribuir para <b>${responsibleName}</b> não foi aprovada pelo líder.</p>
+        <h2>Olá, ${esc(creatorName)}</h2>
+        <p>A tarefa "<b>${esc(title)}</b>" que você tentou atribuir para <b>${esc(responsibleName)}</b> não foi aprovada pelo líder.</p>
       </div>
     `,
   });
@@ -242,7 +252,7 @@ async function sendGtEntryRequestEmail({ to, requesterName, gtName }) {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Novo pedido de entrada</h2>
-        <p><b>${requesterName}</b> pediu para entrar no <b>${gtName}</b>.</p>
+        <p><b>${esc(requesterName)}</b> pediu para entrar no <b>${esc(gtName)}</b>.</p>
         <p>
           <a href="${link}"
              style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;
@@ -264,10 +274,10 @@ async function sendGtEntryResolvedEmail({ to, name, gtName, aprovado }) {
     subject: `${aprovado ? 'Entrada aprovada' : 'Pedido negado'} - ${gtName}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Olá, ${name}!</h2>
+        <h2>Olá, ${esc(name)}!</h2>
         <p>${aprovado
-          ? `Seu pedido para entrar no <b>${gtName}</b> foi aprovado. Já pode acessar por lá.`
-          : `Seu pedido para entrar no <b>${gtName}</b> não foi aprovado pelo líder.`}</p>
+          ? `Seu pedido para entrar no <b>${esc(gtName)}</b> foi aprovado. Já pode acessar por lá.`
+          : `Seu pedido para entrar no <b>${esc(gtName)}</b> não foi aprovado pelo líder.`}</p>
       </div>
     `,
   });
@@ -285,7 +295,7 @@ async function sendGtTaskAwaitingApprovalEmail({ to, gtOrigemNome, gtDestinoNome
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
         <h2>Nova tarefa entre GTs</h2>
-        <p>O <b>${gtOrigemNome}</b> quer criar a tarefa "<b>${title}</b>" para <b>${responsibleName}</b>, do <b>${gtDestinoNome}</b>.</p>
+        <p>O <b>${esc(gtOrigemNome)}</b> quer criar a tarefa "<b>${esc(title)}</b>" para <b>${esc(responsibleName)}</b>, do <b>${esc(gtDestinoNome)}</b>.</p>
         <p>
           <a href="${link}"
              style="display:inline-block;padding:12px 24px;background:#0b5ea8;color:#fff;

@@ -1509,3 +1509,28 @@ details .form { margin-top: 16px; }
 
 /* Navegação mais responsiva ao toque */
 .sidebar-nav a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+/* ---- Ajustes de visualização (varredura) ---- */
+/* Mural longo rola dentro do próprio card em vez de esticar a página */
+.mural-chat { max-height: 560px; overflow-y: auto; padding-right: 4px; }
+
+/* Matriz de TI: nome da pessoa fica visível ao rolar pro lado */
+#tabelaTi td:first-child,
+#tabelaTi th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--color-surface, #fff);
+  z-index: 1;
+  min-width: 180px;
+}
+
+/* Cartões de GT reagem ao passar o mouse */
+.gt-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.gt-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(15, 33, 71, 0.10); }
+
+/* Alvos de toque mais confortáveis no celular */
+@media (max-width: 860px) {
+  button, .btn-secundario, .sidebar-nav a { min-height: 40px; }
+  .gt-grid { grid-template-columns: 1fr; }
+  .table th, .table td { padding-left: 10px; padding-right: 10px; }
+}
