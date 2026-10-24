@@ -64,6 +64,7 @@ async function requireAuth(req, res, next) {
     // vale tanto pro trocador da sidebar quanto pro isolamento de
     // dados (pessoas, e-mail, etc só mostram gente do GT ativo).
     req.meusGts = gtsDaPessoa;
+<<<<<<< HEAD
     // TI enxerga todos os GTs como líder, sem precisar ser membro de nenhum
     if (user.isTi) {
       const todos = await gtModel.listAll();
@@ -72,6 +73,8 @@ async function requireAuth(req, res, next) {
         role: 'leader', status: 'approved', gts: gt,
       }));
     }
+=======
+>>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38
     res.locals.meusGtsSidebar = req.meusGts;
 
     const slugCookie = req.cookies?.gt_ativo || null;
@@ -132,4 +135,8 @@ async function optionalAuth(req, res, next) {
   next();
 }
 
+<<<<<<< HEAD
 module.exports = { requireAuth, optionalAuth, aplicarPapelTi };
+=======
+module.exports = { requireAuth, optionalAuth };
+>>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38

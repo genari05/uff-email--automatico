@@ -9,23 +9,43 @@ const gtMembershipModel = require('../models/gtMembershipModel');
  */
 async function requireGtAccess(req, res, next) {
   try {
-    const gt = await gtModel.findBySlug(req.params.slug);
-    if (!gt) {
-      return res.status(404).render('errors/nao-encontrado', { title: 'GT não encontrado' });
-    }
-
-    const membership = await gtMembershipModel.findByGtAndUser(gt.id, req.user.id);
-    if (!membership || membership.status !== 'approved') {
-      return res.status(403).render('errors/acesso-negado', {
-        title: 'Acesso negado',
-        mensagem: `Você ainda não faz parte do ${gt.name}. Peça entrada na tela de GTs e aguarde a aprovação do líder.`,
-      });
+    // O requireAuth já carregou os GTs aprovados da pessoa: usa isso
+    // em vez de refazer 2 consultas ao banco a cada clique.
+    const doCache = (req.meusGts || []).find((m) => m.gts.slug === req.params.slug);
+    let gt;
+    let membership;
+    if (doCache) {
+      gt = doCache.gts;
+      membership = doCache;
+    } else {
+      gt = await gtModel.findBySlug(req.params.slug);
+      if (!gt) {
+        return res.status(404).render('errors/nao-encontrado', { title: 'GT não encontrado' });
+      }
+      membership = await gtMembershipModel.findByGtAndUser(gt.id, req.user.id);
+      if (!membership || membership.status !== 'approved') {
+        return res.status(403).render('errors/acesso-negado', {
+          title: 'Acesso negado',
+          mensagem: `Você ainda não faz parte do ${gt.name}. Peça entrada na tela de GTs e aguarde a aprovação do líder.`,
+        });
+      }
     }
 
     req.gt = gt;
     req.gtMembership = membership;
     res.locals.gt = gt;
     res.locals.gtMembership = membership;
+
+    // Estar dentro de um GT = ele vira o GT ativo (era o bug: tudo
+    // continuava mostrando o GT antigo, ex.: sempre o Infra).
+    if (req.cookies?.gt_ativo !== gt.slug) {
+      res.cookie('gt_ativo', gt.slug, { httpOnly: true, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 30 });
+    }
+    req.gtAtivo = gt;
+    req.gtAtivoMembership = membership;
+    res.locals.gtAtivo = gt;
+    res.locals.gtAtivoMembership = membership;
+    res.locals.gtAtivoSlug = gt.slug;
     next();
   } catch (err) {
     console.error('Erro ao verificar acesso ao GT:', err.message);

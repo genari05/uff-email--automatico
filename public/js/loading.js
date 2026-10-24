@@ -17,11 +17,15 @@
     return overlay;
   }
 
+  var timer = null;
   function showLoading() {
-    buildOverlay().classList.add('visible');
+    var overlay = buildOverlay();
+    clearTimeout(timer);
+    timer = setTimeout(function () { overlay.classList.add('visible'); }, 250);
   }
 
   function hideLoading() {
+    clearTimeout(timer);
     var overlay = document.querySelector('.loading-overlay');
     if (overlay) overlay.classList.remove('visible');
   }

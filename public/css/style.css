@@ -747,6 +747,7 @@ button:hover, .btn-primary:hover {
     grid-template-columns: 1fr auto;
     grid-template-areas:
       "brand logout"
+      "gts gts"
       "nav nav";
     align-items: center;
     column-gap: 10px;
@@ -760,6 +761,19 @@ button:hover, .btn-primary:hover {
   .sidebar > div:first-child { display: contents; }
 
   .sidebar-brand { grid-area: brand; padding: 0; }
+
+  /* Trocador de GT vira uma faixa horizontal (igual ao computador) */
+  .gt-switcher {
+    grid-area: gts;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+    padding: 0 0 2px;
+    min-width: 0;
+  }
+  .gt-switcher-icone { flex-shrink: 0; width: 32px; height: 32px; }
+  .gt-switcher-nome { white-space: nowrap; margin: 0 0 0 4px; }
+  .sidebar-nav { min-width: 0; }
 
   .sidebar-nav {
     grid-area: nav;
@@ -1471,3 +1485,27 @@ details .form { margin-top: 16px; }
   font-size: 13.5px;
   margin: 0;
 }
+
+
+/* Nome do GT que está sendo visto + caixa de destino da tarefa */
+.gt-switcher-nome {
+  --gt-color: var(--color-text-inverse-muted);
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--color-text-inverse-muted);
+  padding-top: 4px;
+}
+.gt-switcher-nome b { color: #fff; }
+@media (max-width: 860px) { .gt-switcher-nome { flex-basis: auto; } }
+
+.gt-destino-box {
+  background: var(--color-primary-soft);
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.gt-destino-box small { display: block; margin-top: 6px; color: var(--color-text-muted); }
+
+/* Navegação mais responsiva ao toque */
+.sidebar-nav a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
