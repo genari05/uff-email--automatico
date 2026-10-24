@@ -12,11 +12,7 @@ const {
 
 // GET /tarefas/nova
 async function formNovaTarefa(req, res) {
-<<<<<<< HEAD
   if (req.gtAtivo && !req.user.isTi) return res.redirect(`/gts/${req.gtAtivo.slug}/tarefas/nova`);
-=======
-  if (req.gtAtivo) return res.redirect(`/gts/${req.gtAtivo.slug}/tarefas/nova`);
->>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38
   const [pessoas, templates] = await Promise.all([
     personModel.listAll({ onlyVerified: true }),
     emailModel.listTemplates(),
@@ -202,11 +198,7 @@ async function criarTarefa(req, res) {
 
 // GET /tarefas -> painel geral da equipe
 async function listarTarefas(req, res) {
-<<<<<<< HEAD
   if (req.gtAtivo && !req.user.isTi) return res.redirect(`/gts/${req.gtAtivo.slug}`);
-=======
-  if (req.gtAtivo) return res.redirect(`/gts/${req.gtAtivo.slug}`);
->>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38
   const [tarefas, atividades] = await Promise.all([
     taskModel.listVisible(),
     activityModel.listRecent(30),
@@ -225,11 +217,7 @@ async function listarTarefas(req, res) {
 async function minhasTarefas(req, res) {
   let tarefas = await taskModel.listByResponsible(req.user.person_id);
   // Só as tarefas do GT que está ativo (as antigas, sem GT, continuam aparecendo)
-<<<<<<< HEAD
   if (req.gtAtivo && !req.user.isTi) tarefas = tarefas.filter((t) => !t.gt_id || t.gt_id === req.gtAtivo.id);
-=======
-  if (req.gtAtivo) tarefas = tarefas.filter((t) => !t.gt_id || t.gt_id === req.gtAtivo.id);
->>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38
   res.render('tasks/minhas', { title: 'Minhas tarefas', tarefas });
 }
 
@@ -263,11 +251,7 @@ async function concluirTarefa(req, res) {
 
 // GET /tarefas/aprovacao -> painel do líder (tarefas aguardando aprovação)
 async function listarAprovacao(req, res) {
-<<<<<<< HEAD
   if (req.gtAtivo && !req.user.isTi && req.gtAtivoMembership?.role === 'leader') {
-=======
-  if (req.gtAtivo && req.gtAtivoMembership?.role === 'leader') {
->>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38
     return res.redirect(`/gts/${req.gtAtivo.slug}/tarefas/aprovacao`);
   }
   const tarefas = await taskModel.listAwaitingApproval();
@@ -330,11 +314,7 @@ async function resolverAprovacao(req, res) {
 // GET /tarefas/desempenho -> estatísticas gerais da equipe (só líder)
 async function desempenho(req, res) {
   let tarefas = await taskModel.listAllForStats();
-<<<<<<< HEAD
   if (req.gtAtivo && !req.user.isTi) tarefas = tarefas.filter((t) => t.gt_id === req.gtAtivo.id);
-=======
-  if (req.gtAtivo) tarefas = tarefas.filter((t) => t.gt_id === req.gtAtivo.id);
->>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38
 
   const resumo = {
     total: tarefas.length,
@@ -384,11 +364,7 @@ async function excluirTarefa(req, res) {
 // GET /tarefas/lembretes -> controle de status de envio dos lembretes
 async function statusLembretes(req, res) {
   let tarefas = await taskModel.listWithReminder();
-<<<<<<< HEAD
   if (req.gtAtivo && !req.user.isTi) tarefas = tarefas.filter((t) => t.gt_id === req.gtAtivo.id);
-=======
-  if (req.gtAtivo) tarefas = tarefas.filter((t) => t.gt_id === req.gtAtivo.id);
->>>>>>> 95248c7a7374d6f120abd0db70de48b5cd5f2e38
   const agora = new Date();
 
   const comStatus = tarefas.map((t) => {
