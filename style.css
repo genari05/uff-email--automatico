@@ -1556,3 +1556,13 @@ details .form { margin-top: 16px; }
   /* No celular o menu é uma fileira só: os títulos viram uma marca discreta */
   .sidebar-secao { display: none; }
 }
+
+.topbar-secao {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
