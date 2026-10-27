@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Desempenho da equipe' }) %>
+
+      <div class="app-content" style="display:flex; flex-direction:column; gap:20px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+          <div class="card" style="padding:16px;">
+            <span style="font-size:12px; color:var(--color-text-muted);">Total de tarefas</span>
+            <div style="font-size:28px; font-weight:700; font-family: var(--font-display);"><%= resumo.total %></div>
+          </div>
+          <div class="card" style="padding:16px;">
+            <span style="font-size:12px; color:var(--color-text-muted);">Pendentes</span>
+            <div style="font-size:28px; font-weight:700; font-family: var(--font-display); color:var(--color-warning);"><%= resumo.pendentes %></div>
+          </div>
+          <div class="card" style="padding:16px;">
+            <span style="font-size:12px; color:var(--color-text-muted);">Concluídas</span>
+            <div style="font-size:28px; font-weight:700; font-family: var(--font-display); color:var(--color-success);"><%= resumo.concluidas %></div>
+          </div>
+          <div class="card" style="padding:16px;">
+            <span style="font-size:12px; color:var(--color-text-muted);">Aguardando aprovação</span>
+            <div style="font-size:28px; font-weight:700; font-family: var(--font-display);"><%= resumo.aguardandoAprovacao %></div>
+          </div>
+          <div class="card" style="padding:16px;">
+            <span style="font-size:12px; color:var(--color-text-muted);">Negadas</span>
+            <div style="font-size:28px; font-weight:700; font-family: var(--font-display); color:var(--color-danger);"><%= resumo.negadas %></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0;">Progresso por pessoa</h2>
+
+          <% if (porPessoa.length === 0) { %>
+            <p>Nenhuma tarefa ativa atribuída ainda.</p>
+          <% } %>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Pessoa</th>
+                  <th>Total</th>
+                  <th>Pendentes</th>
+                  <th>Concluídas</th>
+                  <th>Progresso</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% porPessoa.forEach(p => { %>
+                  <% const pct = p.total > 0 ? Math.round((p.concluidas / p.total) * 100) : 0; %>
+                  <tr>
+                    <td data-label="Pessoa"><%= p.nome %></td>
+                    <td data-label="Total"><%= p.total %></td>
+                    <td data-label="Pendentes"><%= p.pendentes %></td>
+                    <td data-label="Concluídas"><%= p.concluidas %></td>
+                    <td data-label="Progresso">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="flex:1; height:6px; background:var(--color-surface-muted); border-radius:999px; overflow:hidden; min-width:60px;">
+                          <div style="height:100%; width:<%= pct %>%; background:var(--color-success);"></div>
+                        </div>
+                        <small><%= pct %>%</small>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

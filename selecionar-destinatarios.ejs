@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Selecionar destinatários' }) %>
+
+      <div class="app-content">
+        <div class="card" style="max-width: 760px; margin: 0 auto;">
+          <% if (typeof gtAtivo !== 'undefined' && gtAtivo) { %>
+            <span class="badge" style="background: <%= gtAtivo.color %>1a; color: <%= gtAtivo.color %>; border:none; margin-bottom:12px;">
+              Destinatários do <%= gtAtivo.name %>
+            </span>
+          <% } %>
+
+          <% if (typeof gtAtivo === 'undefined' || !gtAtivo) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <% if (typeof meusGts !== 'undefined' && meusGts.length > 1) { %>
+                <h3>Escolha um GT pra enviar e-mail</h3>
+                <p>Você participa de mais de um GT. Escolha qual na barra lateral pra ver os destinatários dele.</p>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
+                  <% meusGts.forEach(m => { %>
+                    <form method="POST" action="/gts/<%= m.gts.slug %>/ativar" style="display:inline;">
+                      <button type="submit" class="btn-secundario" style="padding:6px 14px; font-size:13px; border-color: <%= m.gts.color %>; color: <%= m.gts.color %>;"><%= m.gts.name %></button>
+                    </form>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <h3>Você ainda não faz parte de nenhum GT</h3>
+                <p>Peça entrada em um GT na tela de Grupos de Trabalho pra poder enviar e-mail pra equipe.</p>
+                <a href="/gts" class="btn-secundario" style="margin-top:8px;">Ver Grupos de Trabalho</a>
+              <% } %>
+            </div>
+          <% } else { %>
+          <form method="POST" action="/emails/selecionar" class="form" style="max-width: none;">
+            <label class="checkbox-linha" style="background: var(--color-surface-muted); font-weight: 600;">
+              <input type="checkbox" id="selecionar-todos">
+              Selecionar todos
+            </label>
+
+            <div class="checkbox-grid" style="margin-top: 12px;">
+              <% pessoas.forEach(p => { %>
+                <label class="checkbox-linha">
+                  <input type="checkbox" name="destinatarios" value="<%= p.id %>" class="checkbox-pessoa">
+                  <span><%= p.name %> — <small><%= p.email %></small></span>
+                </label>
+              <% }) %>
+            </div>
+
+            <% if (pessoas.length === 0) { %>
+              <div class="empty-state">
+                <div class="empty-state-icon">Ψ</div>
+                <h3>Nenhum destinatário disponível no <%= gtAtivo.name %></h3>
+                <p>Assim que alguém desse GT confirmar o e-mail, essa pessoa aparece aqui pra receber comunicados.</p>
+              </div>
+            <% } %>
+
+            <button type="submit">Continuar</button>
+          </form>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const master = document.getElementById('selecionar-todos');
+    const checkboxes = document.querySelectorAll('.checkbox-pessoa');
+    master?.addEventListener('change', () => {
+      checkboxes.forEach(cb => { cb.checked = master.checked; });
+    });
+  </script>
+</body>
+</html>

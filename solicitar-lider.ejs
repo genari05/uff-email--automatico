@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Virar líder' }) %>
+
+      <div class="app-content">
+        <div class="card" style="max-width: 480px; margin: 0 auto;">
+          <p>Envie um pedido para o(s) líder(es) atual(is) avaliarem se você pode se tornar líder do sistema.</p>
+
+          <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+          <% if (sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
+
+          <% if (typeof pedidoPendente !== 'undefined' && pedidoPendente) { %>
+            <p class="alerta">Você já tem um pedido pendente. Aguarde a análise.</p>
+          <% } else if (!erro) { %>
+            <form method="POST" action="/acesso/virar-lider" class="form" style="max-width: none;">
+              <button type="submit">Solicitar promoção a líder</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
