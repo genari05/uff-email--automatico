@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Adicionar aos GTs' }) %>
+
+      <div class="app-content">
+        <div class="card">
+          <p style="margin-top:0; color: var(--color-text-muted);">
+            Marque o GT de cada pessoa para <b>adicionar</b> e desmarque para <b>remover</b>. Quem é líder do GT aparece com ★ (trave) — mude a liderança no painel do GT.
+            Depois clique em <b>Salvar</b>: só o que mudou é aplicado.
+          </p>
+          <% if (aviso) { %><p class="alerta alerta-sucesso"><%= aviso %></p><% } %>
+
+          <input type="search" id="busca" placeholder="Buscar pessoa por nome ou e-mail…" style="max-width:360px; margin-bottom:12px;">
+
+          <form method="POST" action="/ti/gts">
+            <div class="table-wrapper">
+              <table class="table" id="tabelaTi">
+                <thead>
+                  <tr>
+                    <th>Pessoa</th>
+                    <% gts.forEach(g => { %>
+                      <th style="text-align:center; color: <%= g.color %>;"><%= g.name.replace('GT ', '') %></th>
+                    <% }) %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% pessoas.forEach(p => { %>
+                    <tr data-busca="<%= (p.name + ' ' + p.email).toLowerCase() %>">
+                      <td data-label="Pessoa">
+                        <input type="hidden" name="pessoas" value="<%= p.id %>">
+                        <%= p.name %><br><span class="stat-mono" style="font-size:12px;"><%= p.email %></span>
+                      </td>
+                      <% gts.forEach(g => { %>
+                        <% const papel = (vinc[p.id] || {})[g.id]; %>
+                        <td data-label="<%= g.name.replace('GT ', '') %>" style="text-align:center;">
+                          <% if (papel === 'leader') { %>
+                            <span title="Líder deste GT" style="color:#b7791f;">★</span>
+                          <% } else { %>
+                            <input type="checkbox" name="vinculo" value="<%= p.id %>|<%= g.id %>" <%= papel === 'member' ? 'checked' : '' %> style="width:18px; height:18px;">
+                          <% } %>
+                        </td>
+                      <% }) %>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="position:sticky; bottom:0; background:var(--color-surface, #fff); padding:12px 0; margin-top:8px;">
+              <button type="submit">Salvar alterações</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('busca').addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('#tabelaTi tbody tr').forEach((tr) => {
+        tr.style.display = tr.dataset.busca.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

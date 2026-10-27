@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Visão geral (tudo)' }) %>
+
+      <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
+        <div class="card">
+          <h2 style="margin-top:0;">Todas as tarefas</h2>
+
+          <% if (tarefas.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma tarefa cadastrada ainda</h3>
+              <p>Assim que alguém criar uma tarefa, ela aparece aqui com o responsável, prazo e status de todos.</p>
+            </div>
+          <% } else { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Tarefa</th>
+                    <th>Responsável</th>
+                    <th>Prazo</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% tarefas.forEach(t => { %>
+                    <tr>
+                      <td data-label="Tarefa"><%= t.title %></td>
+                      <td data-label="Responsável"><%= t.people.name %></td>
+                      <td data-label="Prazo"><%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></td>
+                      <td data-label="Status">
+                        <% if (t.status === 'completed') { %>
+                          <span class="badge badge-sucesso">Concluída</span>
+                        <% } else if (t.status === 'denied') { %>
+                          <span class="badge badge-negado">Negada</span>
+                        <% } else { %>
+                          <span class="badge badge-pendente">Pendente</span>
+                        <% } %>
+                      </td>
+                      <td data-label="">
+                        <div style="display:flex; gap:6px;">
+                          <% if (podeEditarTarefa(t)) { %>
+                            <a href="/tarefas/<%= t.id %>/editar" class="btn-secundario" style="padding:6px 12px; font-size:12.5px;">Editar</a>
+                          <% } %>
+                          <% if (currentUser.role === 'leader') { %>
+                            <form method="POST" action="/tarefas/<%= t.id %>/excluir" class="form-excluir-tarefa">
+                              <button type="submit" class="btn-nao" style="padding:6px 12px; font-size:12.5px;">Excluir</button>
+                            </form>
+                          <% } %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0;">Mural de atividades</h2>
+
+          <% if (atividades.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nada por aqui ainda</h3>
+              <p>Conclusões, novas tarefas e lembretes enviados vão aparecer aqui, como um grupo da equipe.</p>
+            </div>
+          <% } else { %>
+            <div class="mural-chat">
+              <% atividades.slice().reverse().forEach((a) => { %>
+                <%
+                  const pessoaMural = a.people;
+                  const nomeMural = pessoaMural ? pessoaMural.name : 'Sistema';
+                  const inicial = nomeMural.charAt(0).toUpperCase();
+                  const classePapel = a.papel === 'leader' ? 'lider' : 'membro';
+                %>
+                <div class="mural-msg">
+                  <% if (pessoaMural && pessoaMural.avatar_url) { %>
+                    <img class="mural-avatar" src="<%= pessoaMural.avatar_url %>" alt="">
+                  <% } else { %>
+                    <div class="mural-avatar"><%= inicial %></div>
+                  <% } %>
+                  <div class="mural-msg-body">
+                    <div class="mural-bubble <%= classePapel %>">
+                      <span class="mural-nome"><%= nomeMural %></span>
+                      <%= a.message %>
+                      <small><%= new Date(a.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></small>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.form-excluir-tarefa').forEach((form) => {
+      form.addEventListener('submit', (e) => {
+        if (!confirm('Tem certeza que quer excluir essa tarefa? Essa ação não pode ser desfeita.')) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

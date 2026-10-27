@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Aprovar tarefas - ' + gt.name }) %>
+
+      <div class="app-content">
+        <a href="/gts/<%= gt.slug %>" class="voltar-link">← Voltar ao <%= gt.name %></a>
+
+        <div class="card">
+          <% if (tarefas.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma tarefa aguardando aprovação</h3>
+              <p>Quando alguém do time (ou de outro GT) atribuir uma tarefa pra este GT, ela aparece aqui até você decidir.</p>
+            </div>
+          <% } %>
+
+          <ul class="lista-pedidos">
+            <% tarefas.forEach(t => { %>
+              <li class="card-pedido">
+                <div>
+                  <strong><%= t.title %></strong>
+                  <% if (t.origemGt) { %>
+                    <span class="badge" style="background: <%= t.origemGt.color %>1a; color: <%= t.origemGt.color %>; border:none;">Vem do <%= t.origemGt.name %></span>
+                  <% } %>
+                  <br>
+                  <span>Para: <%= t.people.name %> (<%= t.people.email %>)</span><br>
+                  <% if (t.description) { %><span><%= t.description %></span><br><% } %>
+                  <small>Prazo: <%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></small>
+                </div>
+                <div class="acoes-pedido">
+                  <form method="POST" action="/gts/<%= gt.slug %>/tarefas/<%= t.id %>/aprovar" style="display:inline">
+                    <input type="hidden" name="decisao" value="pending">
+                    <button type="submit" class="btn-sim">Aprovar</button>
+                  </form>
+                  <form method="POST" action="/gts/<%= gt.slug %>/tarefas/<%= t.id %>/aprovar" style="display:inline">
+                    <input type="hidden" name="decisao" value="denied">
+                    <button type="submit" class="btn-nao">Negar</button>
+                  </form>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
