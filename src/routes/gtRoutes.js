@@ -14,12 +14,14 @@ router.post('/:slug/entrar', gtController.pedirEntrada);
 
 // Pedidos de entrada pendentes (líder de qualquer GT que lidere)
 // -> precisa vir ANTES de /:slug pra não ser confundido com um slug
-router.get('/pendentes', gtController.listarPendentes);
+router.get('/pendentes', (req, res) => res.redirect('/pedidos'));
 router.post('/pendentes/:id/resolver', gtController.resolverPendente);
 
 // Mural central entre GTs (qualquer pessoa com pelo menos 1 GT aprovado)
 router.get('/central', centralMessageController.listarMuralCentral);
 router.post('/central', centralMessageController.postarMuralCentral);
+router.post('/central/:id/editar', centralMessageController.editarMensagemCentral);
+router.post('/central/:id/excluir', centralMessageController.excluirMensagemCentral);
 
 // Troca o GT ativo da sessão
 router.post('/:slug/ativar', gtController.ativarGt);
@@ -32,6 +34,10 @@ router.get('/:slug', gtTaskController.painelGt);
 router.get('/:slug/tarefas/nova', gtTaskController.formNovaTarefaGt);
 router.post('/:slug/tarefas', gtTaskController.criarTarefaGt);
 router.post('/:slug/tarefas/:id/concluir', gtTaskController.concluirTarefaGt);
+
+// Editar dados do GT (nome, descrição, cor): só o líder
+router.get('/:slug/editar', requireGtLeader, gtController.formEditarGt);
+router.post('/:slug/editar', requireGtLeader, gtController.salvarGt);
 
 // Dar/tirar liderança dentro do GT: só o líder DAQUELE GT
 router.post('/:slug/equipe/:membershipId/papel', requireGtLeader, gtTaskController.alterarPapelNoGt);

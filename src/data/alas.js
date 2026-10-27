@@ -62,7 +62,7 @@ const ALAS = {
     saudacao: 'Bem-vindo(a) à Ala Lewin',
     explicacao: 'A visão do grupo inteiro: todas as tarefas da equipe, lado a lado com o mural de atividades ao vivo.',
   },
-  '/acesso/pendentes': {
+  '/pedidos': {
     figura: 'Rogers',
     slug: 'rogers',
     saudacao: 'Bem-vindo(a) à Ala Rogers',

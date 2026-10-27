@@ -6,7 +6,7 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: 'Painel de tarefas' }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Visão geral (tudo)' }) %>
 
       <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
         <div class="card">
@@ -27,7 +27,7 @@
                     <th>Responsável</th>
                     <th>Prazo</th>
                     <th>Status</th>
-                    <% if (currentUser.role === 'leader') { %><th></th><% } %>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -45,13 +45,18 @@
                           <span class="badge badge-pendente">Pendente</span>
                         <% } %>
                       </td>
-                      <% if (currentUser.role === 'leader') { %>
-                        <td data-label="">
-                          <form method="POST" action="/tarefas/<%= t.id %>/excluir" class="form-excluir-tarefa">
-                            <button type="submit" class="btn-nao" style="padding:6px 12px; font-size:12.5px;">Excluir</button>
-                          </form>
-                        </td>
-                      <% } %>
+                      <td data-label="">
+                        <div style="display:flex; gap:6px;">
+                          <% if (podeEditarTarefa(t)) { %>
+                            <a href="/tarefas/<%= t.id %>/editar" class="btn-secundario" style="padding:6px 12px; font-size:12.5px;">Editar</a>
+                          <% } %>
+                          <% if (currentUser.role === 'leader') { %>
+                            <form method="POST" action="/tarefas/<%= t.id %>/excluir" class="form-excluir-tarefa">
+                              <button type="submit" class="btn-nao" style="padding:6px 12px; font-size:12.5px;">Excluir</button>
+                            </form>
+                          <% } %>
+                        </div>
+                      </td>
                     </tr>
                   <% }) %>
                 </tbody>
@@ -88,7 +93,7 @@
                     <div class="mural-bubble <%= classePapel %>">
                       <span class="mural-nome"><%= nomeMural %></span>
                       <%= a.message %>
-                      <small><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
+                      <small><%= new Date(a.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></small>
                     </div>
                   </div>
                 </div>

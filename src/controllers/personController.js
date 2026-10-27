@@ -77,7 +77,7 @@ async function criarPessoa(req, res) {
         ? (await gtMembershipModel.listApprovedMembersOfGt(req.gtAtivo.id)).map((m) => m.users?.people).filter(Boolean)
         : [];
       return res.render('people/lista', {
-        title: 'Pessoas cadastradas',
+        title: 'Pessoas',
         pessoas,
         meusGts: req.meusGts,
         erro: null,
@@ -156,14 +156,14 @@ async function listarPessoas(req, res) {
       });
       const papeis = await userModel.findRolesByPersonIds(pessoas.map((p) => p.id));
       return res.render('people/lista', {
-        title: 'Pessoas cadastradas',
+        title: 'Pessoas',
         pessoas, papeis, gtsPorPessoa,
         gtAtivo: null, visaoGeral: true,
         meusGts: req.meusGts, erro: null, sucesso: req.query.ok || null,
       });
     } catch (err) {
       console.error(err);
-      return res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [], gtAtivo: null, visaoGeral: true, meusGts: req.meusGts, erro: 'Erro ao carregar as pessoas.', sucesso: null });
+      return res.render('people/lista', { title: 'Pessoas', pessoas: [], gtAtivo: null, visaoGeral: true, meusGts: req.meusGts, erro: 'Erro ao carregar as pessoas.', sucesso: null });
     }
   }
 
@@ -172,7 +172,7 @@ async function listarPessoas(req, res) {
   // em vez de mostrar tudo misturado.
   if (!req.gtAtivo) {
     return res.render('people/lista', {
-      title: 'Pessoas cadastradas',
+      title: 'Pessoas',
       pessoas: [],
       meusGts: req.meusGts,
       erro: null,
@@ -188,18 +188,23 @@ async function listarPessoas(req, res) {
       .sort((a, b) => a.name.localeCompare(b.name));
 
     const papeis = await userModel.findRolesByPersonIds(pessoas.map((p) => p.id));
+    const vinculoPorPessoa = {};
+    membros.forEach((m) => {
+      if (m.users?.people) vinculoPorPessoa[m.users.people.id] = { id: m.id, role: m.role };
+    });
 
     res.render('people/lista', {
-      title: 'Pessoas cadastradas',
+      title: 'Pessoas',
       pessoas,
       papeis,
+      vinculoPorPessoa,
       meusGts: req.meusGts,
       erro: null,
       sucesso: req.query.ok || null,
     });
   } catch (err) {
     console.error(err);
-    res.render('people/lista', { title: 'Pessoas cadastradas', pessoas: [], meusGts: req.meusGts, erro: null, sucesso: null });
+    res.render('people/lista', { title: 'Pessoas', pessoas: [], meusGts: req.meusGts, erro: null, sucesso: null });
   }
 }
 
@@ -317,7 +322,7 @@ async function reenviarVerificacao(req, res) {
       ? (await gtMembershipModel.listApprovedMembersOfGt(req.gtAtivo.id)).map((m) => m.users?.people).filter(Boolean)
       : [];
     res.render('people/lista', {
-      title: 'Pessoas cadastradas',
+      title: 'Pessoas',
       pessoas,
       meusGts: req.meusGts,
       erro: null,

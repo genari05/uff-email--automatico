@@ -136,7 +136,48 @@ async function criarTemplate(req, res) {
   }
 }
 
+const podeMexerNoModelo = (req, t) => t && (req.user.role === 'leader' || t.created_by === req.user.id);
+
+// GET /emails/templates/:id/editar
+async function formEditarTemplate(req, res) {
+  const t = await emailModel.findTemplateById(req.params.id);
+  if (!t) return res.status(404).render('errors/nao-encontrado', { title: 'Modelo não encontrado' });
+  if (!podeMexerNoModelo(req, t)) {
+    return res.status(403).render('errors/acesso-negado', { title: 'Acesso negado', mensagem: 'Só quem criou o modelo ou a coordenação pode editá-lo.' });
+  }
+  res.render('dashboard/template-editar', { title: 'Editar modelo', t, erro: null });
+}
+
+// POST /emails/templates/:id/editar
+async function salvarTemplate(req, res) {
+  const t = await emailModel.findTemplateById(req.params.id);
+  if (!t) return res.status(404).render('errors/nao-encontrado', { title: 'Modelo não encontrado' });
+  if (!podeMexerNoModelo(req, t)) {
+    return res.status(403).render('errors/acesso-negado', { title: 'Acesso negado', mensagem: 'Só quem criou o modelo ou a coordenação pode editá-lo.' });
+  }
+  const { title, subject, body } = req.body;
+  if (!title?.trim() || !subject?.trim() || !body?.trim()) {
+    return res.render('dashboard/template-editar', { title: 'Editar modelo', t: { ...t, title, subject, body }, erro: 'Preencha nome, assunto e corpo.' });
+  }
+  await emailModel.updateTemplate(t.id, { title: title.trim(), subject: subject.trim(), body });
+  res.redirect('/emails/tipo');
+}
+
+// POST /emails/templates/:id/excluir
+async function excluirTemplate(req, res) {
+  try {
+    const t = await emailModel.findTemplateById(req.params.id);
+    if (t && podeMexerNoModelo(req, t)) await emailModel.deleteTemplate(t.id);
+  } catch (err) {
+    console.error('Não foi possível excluir o modelo (talvez esteja em uso):', err.message);
+  }
+  res.redirect('/emails/tipo');
+}
+
 module.exports = {
+  formEditarTemplate,
+  salvarTemplate,
+  excluirTemplate,
   formSelecionarDestinatarios,
   processarSelecao,
   formTipoEmail,

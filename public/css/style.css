@@ -1534,3 +1534,35 @@ details .form { margin-top: 16px; }
   .gt-grid { grid-template-columns: 1fr; }
   .table th, .table td { padding-left: 10px; padding-right: 10px; }
 }
+
+/* ---- Edição de mensagens ---- */
+.msg-acoes { margin-top: 6px; font-size: 12.5px; }
+.msg-acoes summary { cursor: pointer; color: var(--color-text-muted); }
+.msg-editar { margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
+.msg-editar textarea { width: 100%; }
+
+/* ---- Menu lateral agrupado por assunto ---- */
+.sidebar-secao {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-inverse-muted);
+  opacity: 0.6;
+  padding: 14px 12px 4px;
+}
+.sidebar-secao:first-child { padding-top: 4px; }
+@media (max-width: 860px) {
+  /* No celular o menu é uma fileira só: os títulos viram uma marca discreta */
+  .sidebar-secao { display: none; }
+}
+
+.topbar-secao {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}

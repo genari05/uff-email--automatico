@@ -58,14 +58,6 @@ async function pedirEntrada(req, res) {
   }
 }
 
-// GET /gts/pendentes -> pedidos de entrada pendentes nos GTs que a pessoa lidera
-async function listarPendentes(req, res) {
-  const pedidos = req.user.isTi
-    ? await gtMembershipModel.listPendingAll()
-    : await gtMembershipModel.listPendingForLeaderGts(req.user.id);
-  res.render('gts/pendentes', { title: 'Pedidos de entrada em GTs', pedidos });
-}
-
 // POST /gts/pendentes/:id/resolver -> aprova ou nega um pedido de entrada
 async function resolverPendente(req, res) {
   try {
@@ -73,7 +65,7 @@ async function resolverPendente(req, res) {
     const { decisao } = req.body; // 'approved' | 'denied'
 
     const membership = await gtMembershipModel.findById(id);
-    if (!membership) return res.redirect('/gts/pendentes');
+    if (!membership) return res.redirect('/pedidos');
 
     // Só o líder do GT em questão pode resolver esse pedido específico
     const souLiderDesseGt = req.user.isTi
@@ -100,11 +92,31 @@ async function resolverPendente(req, res) {
       }).catch((err) => console.error('Erro ao notificar resultado do pedido de GT:', err.message));
     }
 
-    res.redirect('/gts/pendentes');
+    res.redirect('/pedidos');
   } catch (err) {
     console.error(err);
-    res.redirect('/gts/pendentes');
+    res.redirect('/pedidos');
   }
+}
+
+// GET /gts/:slug/editar -> líder do GT (ou TI) edita nome, descrição e cor
+function formEditarGt(req, res) {
+  res.render('gts/editar', { title: 'Editar GT', gt: req.gt, erro: null });
+}
+
+// POST /gts/:slug/editar
+async function salvarGt(req, res) {
+  const name = (req.body.name || '').trim();
+  const description = (req.body.description || '').trim();
+  const color = (req.body.color || '').trim();
+  if (!name || name.length > 60) {
+    return res.render('gts/editar', { title: 'Editar GT', gt: { ...req.gt, name, description, color }, erro: 'Informe um nome de até 60 caracteres.' });
+  }
+  if (!/^#[0-9a-fA-F]{6}$/.test(color)) {
+    return res.render('gts/editar', { title: 'Editar GT', gt: { ...req.gt, name, description, color }, erro: 'Cor inválida.' });
+  }
+  await gtModel.update(req.gt.id, { name, description: description || null, color });
+  res.redirect(`/gts/${req.gt.slug}`);
 }
 
 // POST /gts/:slug/ativar -> troca o GT ativo da sessão (guardado em cookie)
@@ -133,7 +145,8 @@ async function ativarGt(req, res) {
 module.exports = {
   listarGts,
   pedirEntrada,
-  listarPendentes,
   resolverPendente,
   ativarGt,
+  formEditarGt,
+  salvarGt,
 };

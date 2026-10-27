@@ -33,6 +33,22 @@ async function createTemplate({ title, subject, body, createdBy }) {
   return data;
 }
 
+async function updateTemplate(id, { title, subject, body }) {
+  const { data, error } = await supabase
+    .from('email_templates')
+    .update({ title, subject, body })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function deleteTemplate(id) {
+  const { error } = await supabase.from('email_templates').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // -------- Logs de envio --------
 async function logEmail({ senderId, subject, body, recipients, type, templateId = null }) {
   const { data, error } = await supabase
@@ -68,6 +84,8 @@ module.exports = {
   listTemplates,
   findTemplateById,
   createTemplate,
+  updateTemplate,
+  deleteTemplate,
   logEmail,
   listLogs,
 };

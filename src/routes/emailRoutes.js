@@ -10,6 +10,9 @@ router.post('/selecionar', emailController.processarSelecao);
 
 router.get('/tipo', emailController.formTipoEmail);
 router.post('/templates', emailController.criarTemplate);
+router.get('/templates/:id/editar', emailController.formEditarTemplate);
+router.post('/templates/:id/editar', emailController.salvarTemplate);
+router.post('/templates/:id/excluir', emailController.excluirTemplate);
 
 router.get('/compor', emailController.formCompor);
 router.post('/enviar', emailController.enviar);

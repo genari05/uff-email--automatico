@@ -6,7 +6,7 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: 'Status de e-mails' }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Lembretes enviados' }) %>
 
       <div class="app-content" style="display:flex; flex-direction:column; gap:20px;">
         <div class="card">
@@ -80,7 +80,7 @@
                       </td>
                       <td data-label="Enviado em">
                         <% if (t.reminder_sent_at) { %>
-                          <%= new Date(t.reminder_sent_at).toLocaleString('pt-BR') %>
+                          <%= new Date(t.reminder_sent_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %>
                         <% } else { %>
                           <span style="color:var(--color-text-muted);">—</span>
                         <% } %>

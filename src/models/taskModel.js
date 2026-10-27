@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const { hojeSP } = require('../utils/datas');
 
 const TABLE = 'tasks';
 
@@ -64,7 +65,7 @@ async function listAwaitingApproval() {
  * de horário (quando tem) é feita em reminderService.js.
  */
 async function listPendingReminders() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = hojeSP();
   const { data, error } = await supabase
     .from(TABLE)
     .select('*, people:responsible_person_id(*)')
@@ -82,6 +83,25 @@ async function markReminderSent(id) {
     .update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() })
     .eq('id', id);
   if (error) throw error;
+}
+
+/** Atualiza campos de uma tarefa (edição). Só aceita colunas conhecidas. */
+const CAMPOS_EDITAVEIS = [
+  'title', 'description', 'responsible_person_id', 'deadline_date', 'status', 'completed_at',
+  'send_reminder', 'reminder_date', 'reminder_time', 'reminder_type', 'reminder_template_id',
+  'reminder_subject', 'reminder_body', 'reminder_sent', 'reminder_sent_at',
+];
+async function update(id, campos) {
+  const dados = {};
+  CAMPOS_EDITAVEIS.forEach((c) => { if (campos[c] !== undefined) dados[c] = campos[c]; });
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update(dados)
+    .eq('id', id)
+    .select('*, people:responsible_person_id(*)')
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 async function markCompleted(id) {
@@ -178,6 +198,7 @@ module.exports = {
   listPendingReminders,
   markReminderSent,
   markCompleted,
+  update,
   resolveApproval,
   listAllForStats,
   remove,

@@ -6,7 +6,7 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: 'Tipo de e-mail' }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Enviar e-mail · tipo' }) %>
 
       <div class="app-content">
         <a href="/emails/selecionar" class="voltar-link">← Voltar para seleção de destinatários</a>
@@ -24,6 +24,9 @@
                 <li style="margin-bottom: 8px;">
                   <%= t.title %>
                   — <a href="/emails/compor?ids=<%= ids.join(',') %>&template=<%= t.id %>">Usar esse modelo</a>
+                  <% if (currentUser.role === 'leader' || t.created_by === currentUser.id) { %>
+                    · <a href="/emails/templates/<%= t.id %>/editar">Editar</a>
+                  <% } %>
                 </li>
               <% }) %>
             </ul>

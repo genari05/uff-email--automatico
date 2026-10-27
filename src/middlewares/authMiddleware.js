@@ -88,6 +88,13 @@ async function requireAuth(req, res, next) {
       });
     }
 
+    // Quem pode editar uma tarefa: quem criou, líder do GT da tarefa, líder geral ou TI
+    req.podeEditarTarefa = (t) => !!t && (
+      user.isTi || user.role === 'leader' || t.created_by === user.id
+      || req.meusGts.some((m) => m.role === 'leader' && m.gt_id === t.gt_id)
+    );
+    res.locals.podeEditarTarefa = req.podeEditarTarefa;
+
     req.gtAtivo = membershipAtiva ? membershipAtiva.gts : null;
     req.gtAtivoMembership = membershipAtiva || null;
     res.locals.gtAtivo = req.gtAtivo;

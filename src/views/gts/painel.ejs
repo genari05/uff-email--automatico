@@ -6,7 +6,7 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: gt.name }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Tarefas do ' + gt.name }) %>
 
       <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
         <div class="card" style="border-top: 3px solid <%= gt.color %>;">
@@ -18,38 +18,10 @@
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <a href="/gts/<%= gt.slug %>/tarefas/nova"><button type="button">+ Nova tarefa</button></a>
               <a href="/gts/<%= gt.slug %>/tarefas/nova?outro=1"><button type="button" class="btn-secundario">➜ Enviar tarefa para outro GT</button></a>
+              <% if (gtMembership.role === 'leader') { %>
+                <a href="/gts/<%= gt.slug %>/editar"><button type="button" class="btn-secundario">Editar GT</button></a>
+              <% } %>
             </div>
-          </div>
-        </div>
-
-        <div class="card" id="equipe">
-          <h2 style="margin-top:0;">Equipe do <%= gt.name %></h2>
-          <% if (typeof aviso !== 'undefined' && aviso) { %><p class="alerta alerta-sucesso"><%= aviso %></p><% } %>
-          <% if (gtMembership.role === 'leader') { %>
-            <p style="color: var(--color-text-muted); margin-top:0;">Como líder, você pode dar a liderança deste GT para outra pessoa (ou tirar). O GT sempre precisa ter pelo menos um líder.</p>
-          <% } %>
-          <div class="table-wrapper">
-            <table class="table">
-              <thead><tr><th>Pessoa</th><th>Papel</th><% if (gtMembership.role === 'leader') { %><th>Ação</th><% } %></tr></thead>
-              <tbody>
-                <% equipe.forEach(m => { %>
-                  <tr>
-                    <td data-label="Pessoa"><%= m.users.people.name %><% if (m.users.people.id === currentUser.person_id) { %> <span class="badge badge-lider">você</span><% } %></td>
-                    <td data-label="Papel"><span class="badge <%= m.role === 'leader' ? 'badge-lider' : '' %>"><%= m.role === 'leader' ? 'Líder' : 'Membro' %></span></td>
-                    <% if (gtMembership.role === 'leader') { %>
-                      <td data-label="Ação">
-                        <form method="POST" action="/gts/<%= gt.slug %>/equipe/<%= m.id %>/papel" style="display:inline;">
-                          <input type="hidden" name="papel" value="<%= m.role === 'leader' ? 'member' : 'leader' %>">
-                          <button type="submit" class="<%= m.role === 'leader' ? 'btn-nao' : 'btn-sim' %>" style="padding:5px 10px; font-size:12px;">
-                            <%= m.role === 'leader' ? 'Tirar liderança' : 'Tornar líder' %>
-                          </button>
-                        </form>
-                      </td>
-                    <% } %>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
           </div>
         </div>
 
@@ -66,7 +38,7 @@
             <div class="table-wrapper">
               <table class="table">
                 <thead>
-                  <tr><th>Tarefa</th><th>Responsável</th><th>Prazo</th><th>Status</th></tr>
+                  <tr><th>Tarefa</th><th>Responsável</th><th>Prazo</th><th>Status</th><th></th></tr>
                 </thead>
                 <tbody>
                   <% tarefas.forEach(t => { %>
@@ -88,6 +60,16 @@
                           <% } %>
                         <% } %>
                       </td>
+                      <td data-label="">
+                        <% if (podeEditarTarefa(t)) { %>
+                          <div style="display:flex; gap:6px;">
+                            <a href="/tarefas/<%= t.id %>/editar" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Editar</a>
+                            <form method="POST" action="/tarefas/<%= t.id %>/excluir" class="form-excluir-tarefa">
+                              <button type="submit" class="btn-nao" style="padding:5px 10px; font-size:12px;">Excluir</button>
+                            </form>
+                          </div>
+                        <% } %>
+                      </td>
                     </tr>
                   <% }) %>
                 </tbody>
@@ -95,45 +77,15 @@
             </div>
           <% } %>
         </div>
-
-        <div class="card">
-          <h2 style="margin-top:0;">Mural do <%= gt.name %></h2>
-
-          <% if (atividades.length === 0) { %>
-            <div class="empty-state">
-              <div class="empty-state-icon">Ψ</div>
-              <h3>Nada por aqui ainda</h3>
-              <p>As atividades deste GT aparecem aqui, como um grupo próprio da equipe.</p>
-            </div>
-          <% } else { %>
-            <div class="mural-chat">
-              <% atividades.slice().reverse().forEach((a) => { %>
-                <%
-                  const pessoaMural = a.people;
-                  const nomeMural = pessoaMural ? pessoaMural.name : 'Sistema';
-                  const inicial = nomeMural.charAt(0).toUpperCase();
-                  const classePapel = a.papel === 'leader' ? 'lider' : 'membro';
-                %>
-                <div class="mural-msg">
-                  <% if (pessoaMural && pessoaMural.avatar_url) { %>
-                    <img class="mural-avatar" src="<%= pessoaMural.avatar_url %>" alt="">
-                  <% } else { %>
-                    <div class="mural-avatar"><%= inicial %></div>
-                  <% } %>
-                  <div class="mural-msg-body">
-                    <div class="mural-bubble <%= classePapel %>">
-                      <span class="mural-nome"><%= nomeMural %></span>
-                      <%= a.message %>
-                      <small><%= new Date(a.created_at).toLocaleString('pt-BR') %></small>
-                    </div>
-                  </div>
-                </div>
-              <% }) %>
-            </div>
-          <% } %>
-        </div>
       </div>
     </div>
   </div>
+  <script>
+    document.querySelectorAll('.form-excluir-tarefa').forEach((form) => {
+      form.addEventListener('submit', (e) => {
+        if (!confirm('Tem certeza que quer excluir essa tarefa? Essa ação não pode ser desfeita.')) e.preventDefault();
+      });
+    });
+  </script>
 </body>
 </html>

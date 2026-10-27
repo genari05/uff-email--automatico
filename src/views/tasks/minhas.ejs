@@ -31,11 +31,16 @@
                 <small style="color: var(--color-text-muted);">Prazo: <%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></small>
               </div>
 
-              <% if (t.status !== 'completed') { %>
-                <form method="POST" action="/tarefas/<%= t.id %>/concluir">
-                  <button type="submit" class="btn-sim">Marcar como concluída</button>
-                </form>
-              <% } %>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <% if (podeEditarTarefa(t)) { %>
+                  <a href="/tarefas/<%= t.id %>/editar" class="btn-secundario" style="padding:8px 14px;">Editar</a>
+                <% } %>
+                <% if (t.status !== 'completed') { %>
+                  <form method="POST" action="/tarefas/<%= t.id %>/concluir">
+                    <button type="submit" class="btn-sim">Marcar como concluída</button>
+                  </form>
+                <% } %>
+              </div>
             </div>
           <% }) %>
         </div>

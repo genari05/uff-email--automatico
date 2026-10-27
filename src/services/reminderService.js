@@ -1,4 +1,5 @@
 const taskModel = require('../models/taskModel');
+const { momentoSP } = require('../utils/datas');
 const emailModel = require('../models/emailModel');
 const activityModel = require('../models/activityModel');
 const { sendTaskReminderEmail } = require('./emailService');
@@ -23,7 +24,7 @@ async function verificarLembretes() {
       const horario = task.reminder_time && /^\d{2}:\d{2}$/.test(task.reminder_time)
         ? task.reminder_time
         : '00:00';
-      const momentoDoLembrete = new Date(`${task.reminder_date}T${horario}:00`);
+      const momentoDoLembrete = momentoSP(task.reminder_date, horario);
 
       if (momentoDoLembrete > agora) {
         // Ainda não chegou a hora marcada - pula por enquanto

@@ -20,4 +20,15 @@ async function findBySlug(slug) {
   return data;
 }
 
-module.exports = { listAll, findById, findBySlug };
+async function update(id, { name, description, color }) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ name, description, color })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+module.exports = { listAll, findById, findBySlug, update };

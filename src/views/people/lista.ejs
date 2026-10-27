@@ -6,7 +6,7 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: 'Pessoas cadastradas' }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Pessoas' }) %>
 
       <div class="app-content">
         <div class="card">
@@ -60,6 +60,7 @@
                     <th>Nome</th>
                     <th>E-mail</th>
                     <% if (vg) { %><th>GTs</th><% } %>
+                    <% if (!vg) { %><th>Papel no GT</th><% } %>
                     <th>Liderança</th>
                     <th>Status</th>
                     <th>Cadastrado em</th>
@@ -93,6 +94,21 @@
                           <% if (!(gtsDe[p.id] || []).length) { %><span style="color:var(--color-text-muted); font-size:12.5px;">sem GT</span><% } %>
                         </td>
                       <% } %>
+                      <% if (!vg) { %>
+                      <td data-label="Papel no GT">
+                        <% const vinc = (typeof vinculoPorPessoa !== 'undefined' && vinculoPorPessoa[p.id]) || null; %>
+                        <% const souLiderGt = typeof gtAtivoMembership !== 'undefined' && gtAtivoMembership && gtAtivoMembership.role === 'leader'; %>
+                        <% if (vinc) { %>
+                          <span class="badge <%= vinc.role === 'leader' ? 'badge-lider' : '' %>"><%= vinc.role === 'leader' ? 'Líder do GT' : 'Membro' %></span>
+                          <% if (souLiderGt && !souEu) { %>
+                            <form method="POST" action="/gts/<%= gtAtivo.slug %>/equipe/<%= vinc.id %>/papel" style="display:inline;">
+                              <input type="hidden" name="papel" value="<%= vinc.role === 'leader' ? 'member' : 'leader' %>">
+                              <button type="submit" class="btn-link-inline"><%= vinc.role === 'leader' ? 'Tirar liderança' : 'Tornar líder' %></button>
+                            </form>
+                          <% } %>
+                        <% } %>
+                      </td>
+                      <% } %>
                       <td data-label="Liderança">
                         <% const ehLiderGeral = papeisDe[p.id] === 'leader'; %>
                         <span class="badge <%= ehLiderGeral ? 'badge-lider' : '' %>"><%= ehLiderGeral ? 'Líder geral' : 'Membro' %></span>
@@ -113,7 +129,7 @@
                           </form>
                         <% } %>
                       </td>
-                      <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR') %></span></td>
+                      <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></span></td>
                       <td data-label="Ações">
                         <% if (souLider || souEu) { %>
                           <div style="display:flex; gap:6px;">

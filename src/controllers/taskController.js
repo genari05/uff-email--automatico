@@ -1,4 +1,6 @@
 const taskModel = require('../models/taskModel');
+const gtModel = require('../models/gtModel');
+const { hojeSP, momentoSP } = require('../utils/datas');
 const activityModel = require('../models/activityModel');
 const personModel = require('../models/personModel');
 const userModel = require('../models/userModel');
@@ -17,7 +19,7 @@ async function formNovaTarefa(req, res) {
     personModel.listAll({ onlyVerified: true }),
     emailModel.listTemplates(),
   ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = hojeSP();
   res.render('tasks/nova', { title: 'Nova tarefa', erro: null, pessoas, templates, today });
 }
 
@@ -42,7 +44,7 @@ async function criarTarefa(req, res) {
       personModel.listAll({ onlyVerified: true }),
       emailModel.listTemplates(),
     ]);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = hojeSP();
 
     if (!responsibleId || !title || !deadlineDate) {
       return res.render('tasks/nova', {
@@ -185,7 +187,7 @@ async function criarTarefa(req, res) {
       personModel.listAll({ onlyVerified: true }),
       emailModel.listTemplates(),
     ]);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = hojeSP();
     res.render('tasks/nova', {
       title: 'Nova tarefa',
       erro: 'Erro ao criar tarefa. Tente novamente.',
@@ -211,7 +213,7 @@ async function listarTarefas(req, res) {
   const papeis = await userModel.findRolesByPersonIds(idsUnicos);
   const atividadesComPapel = atividades.map((a) => ({ ...a, papel: papeis[a.person_id] || 'member' }));
 
-  res.render('tasks/lista', { title: 'Tarefas', tarefas, atividades: atividadesComPapel });
+  res.render('tasks/lista', { title: 'Visão geral (tudo)', tarefas, atividades: atividadesComPapel });
 }
 
 // GET /tarefas/minhas -> tarefas da pessoa logada
@@ -340,7 +342,7 @@ async function desempenho(req, res) {
   }
   const porPessoa = Array.from(porPessoaMap.values()).sort((a, b) => b.total - a.total);
 
-  res.render('tasks/desempenho', { title: 'Desempenho da equipe', resumo, porPessoa });
+  res.render('tasks/desempenho', { title: 'Desempenho', resumo, porPessoa });
 }
 
 // POST /tarefas/:id/excluir -> só o líder pode excluir
@@ -350,15 +352,31 @@ async function excluirTarefa(req, res) {
     const task = await taskModel.findById(id);
     if (!task) return res.redirect('/tarefas');
 
+    // Quem criou, líder do GT da tarefa, líder geral ou TI
+    if (!req.podeEditarTarefa(task)) {
+      return res.status(403).render('errors/acesso-negado', {
+        title: 'Acesso negado',
+        mensagem: 'Só quem criou a tarefa, o líder do GT ou a coordenação pode excluí-la.',
+      });
+    }
+
+    let destino = '/tarefas/minhas';
+    if (task.gt_id) {
+      const gt = await gtModel.findById(task.gt_id);
+      if (gt) destino = `/gts/${gt.slug}`;
+    } else if (req.user.role === 'leader') {
+      destino = '/tarefas';
+    }
+
     // Apaga o rastro dessa tarefa no mural também (sem deixar nem
     // um aviso novo de exclusão) - some por completo.
     await activityModel.deleteByTask(id);
     await taskModel.remove(id);
 
-    res.redirect('/tarefas');
+    res.redirect(destino);
   } catch (err) {
     console.error(err);
-    res.redirect('/tarefas');
+    res.redirect('/tarefas/minhas');
   }
 }
 
@@ -370,7 +388,7 @@ async function statusLembretes(req, res) {
 
   const comStatus = tarefas.map((t) => {
     const horario = t.reminder_time && /^\d{2}:\d{2}$/.test(t.reminder_time) ? t.reminder_time : '00:00';
-    const momento = new Date(`${t.reminder_date}T${horario}:00`);
+    const momento = momentoSP(t.reminder_date, horario);
 
     let situacao;
     if (t.reminder_sent) situacao = 'enviado';
@@ -381,7 +399,7 @@ async function statusLembretes(req, res) {
   });
 
   res.render('tasks/lembretes', {
-    title: 'Status de e-mails',
+    title: 'Lembretes enviados',
     tarefas: comStatus,
     resultado: req.query.resultado || null,
   });

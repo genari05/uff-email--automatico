@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
+const taskEditController = require('../controllers/taskEditController');
 const { requireAuth } = require('../middlewares/authMiddleware');
 const { requireLeader } = require('../middlewares/leaderMiddleware');
 
@@ -9,13 +10,17 @@ router.use(requireAuth); // tudo aqui exige login com acesso liberado
 router.get('/', taskController.listarTarefas);
 router.get('/minhas', taskController.minhasTarefas);
 router.post('/:id/concluir', taskController.concluirTarefa);
-router.post('/:id/excluir', requireLeader, taskController.excluirTarefa);
+router.post('/:id/excluir', taskController.excluirTarefa); // permissão checada no controller
 
 router.get('/nova', taskController.formNovaTarefa);
+
+// Editar tarefa (quem criou, líder do GT, líder geral ou TI)
+router.get('/:id/editar', taskEditController.formEditar);
+router.post('/:id/editar', taskEditController.salvarEdicao);
 router.post('/', taskController.criarTarefa);
 
-router.get('/lembretes', taskController.statusLembretes);
-router.post('/lembretes/verificar-agora', taskController.forcarVerificacao);
+router.get('/lembretes', requireLeader, taskController.statusLembretes);
+router.post('/lembretes/verificar-agora', requireLeader, taskController.forcarVerificacao);
 
 // Só o líder aprova/nega tarefas atribuídas por membros
 router.get('/aprovacao', requireLeader, taskController.listarAprovacao);

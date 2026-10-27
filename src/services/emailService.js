@@ -126,7 +126,7 @@ async function sendAccessApprovedEmail({ to, name, token }) {
  * Avisa o(s) líder(es) que um novo pedido de acesso chegou.
  */
 async function sendNewAccessRequestEmail({ to, requesterName }) {
-  const link = `${env.appUrl}/acesso/pendentes`;
+  const link = `${env.appUrl}/pedidos`;
   return sendMail({
     to,
     subject: 'Novo pedido de acesso - Semana da Psicologia',
@@ -150,7 +150,7 @@ async function sendNewAccessRequestEmail({ to, requesterName }) {
  * Avisa o(s) líder(es) que alguém quer virar líder também.
  */
 async function sendNewLeaderRequestEmail({ to, requesterName }) {
-  const link = `${env.appUrl}/acesso/pendentes`;
+  const link = `${env.appUrl}/pedidos`;
   return sendMail({
     to,
     subject: 'Pedido para virar líder - Semana da Psicologia',
@@ -245,7 +245,7 @@ async function sendTaskDeniedEmail({ to, creatorName, responsibleName, title }) 
  * Avisa o(s) líder(es) de um GT que chegou um pedido de entrada.
  */
 async function sendGtEntryRequestEmail({ to, requesterName, gtName }) {
-  const link = `${env.appUrl}/gts/pendentes`;
+  const link = `${env.appUrl}/pedidos`;
   return sendMail({
     to,
     subject: `Pedido de entrada no ${gtName} - Semana da Psicologia`,
@@ -288,7 +288,7 @@ async function sendGtEntryResolvedEmail({ to, name, gtName, aprovado }) {
  * pra dentro do time dele (precisa aprovar antes de virar histórico).
  */
 async function sendGtTaskAwaitingApprovalEmail({ to, gtOrigemNome, gtDestinoNome, responsibleName, title }) {
-  const link = `${env.appUrl}/gts/pendentes`;
+  const link = `${env.appUrl}/pedidos`;
   return sendMail({
     to,
     subject: `Tarefa de outro GT aguardando aprovação - ${gtDestinoNome}`,
