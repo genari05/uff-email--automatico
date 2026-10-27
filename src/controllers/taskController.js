@@ -1,4 +1,5 @@
 const taskModel = require('../models/taskModel');
+const auditService = require('../services/auditService');
 const { destinoTarefa } = require('../utils/destinoTarefa');
 const gtModel = require('../models/gtModel');
 const { hojeSP, momentoSP } = require('../utils/datas');
@@ -357,7 +358,7 @@ async function excluirTarefa(req, res) {
     if (!req.podeEditarTarefa(task)) {
       return res.status(403).render('errors/acesso-negado', {
         title: 'Acesso negado',
-        mensagem: 'Só quem criou a tarefa, o líder do GT ou a coordenação pode excluí-la.',
+        mensagem: 'Você não tem permissão para excluir esta tarefa.',
       });
     }
 
@@ -366,6 +367,18 @@ async function excluirTarefa(req, res) {
 
     // Apaga o rastro dessa tarefa no mural também (sem deixar nem
     // um aviso novo de exclusão) - some por completo.
+    const gtDaTarefa = task.gt_id ? await gtModel.findById(task.gt_id) : null;
+    await auditService.registrar(req, {
+      acao: 'delete', entidade: 'tarefa', id: task.id, rotulo: task.title,
+      gtNome: gtDaTarefa?.name || null,
+      snapshot: {
+        'Título': task.title,
+        'Descrição': task.description,
+        'Responsável': task.people?.name,
+        'Prazo': task.deadline_date ? new Date(String(task.deadline_date).slice(0, 10) + 'T12:00:00').toLocaleDateString('pt-BR') : null,
+        'Status': task.status === 'completed' ? 'Concluída' : 'Pendente',
+      },
+    });
     await activityModel.deleteByTask(id);
     await taskModel.remove(id);
 

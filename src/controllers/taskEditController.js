@@ -1,6 +1,7 @@
 const taskModel = require('../models/taskModel');
 const personModel = require('../models/personModel');
 const emailModel = require('../models/emailModel');
+const auditService = require('../services/auditService');
 const { destinoTarefa } = require('../utils/destinoTarefa');
 const gtModel = require('../models/gtModel');
 const gtMembershipModel = require('../models/gtMembershipModel');
@@ -37,7 +38,7 @@ async function carregarTarefa(req, res) {
   if (!req.podeEditarTarefa(task)) {
     res.status(403).render('errors/acesso-negado', {
       title: 'Acesso negado',
-      mensagem: 'Só quem criou a tarefa, o líder do GT ou a coordenação pode editá-la.',
+      mensagem: 'Você não tem permissão para editar esta tarefa.',
     });
     return null;
   }
@@ -131,6 +132,31 @@ async function salvarEdicao(req, res) {
   if (!querLembrete) { campos.reminder_sent = false; campos.reminder_sent_at = null; }
 
   const atualizada = await taskModel.update(task.id, campos);
+
+  // Histórico (só líderes veem): o que mudou, campo a campo
+  const lab = (st) => (st === 'completed' ? 'Concluída' : 'Pendente');
+  const antesA = {
+    title: task.title, description: task.description, resp: task.people?.name,
+    prazo: prazoAntigo, status: task.status,
+    lembrete: task.send_reminder ? `${fmtData(task.reminder_date)} ${task.reminder_time || ''}`.trim() : 'sem lembrete',
+  };
+  const depoisA = {
+    title, description: campos.description, resp: novoResp.name,
+    prazo: b.deadlineDate, status,
+    lembrete: querLembrete ? `${fmtData(b.reminderDate)} ${b.reminderTime || ''}`.trim() : 'sem lembrete',
+  };
+  await auditService.registrar(req, {
+    acao: 'edit', entidade: 'tarefa', id: task.id, rotulo: task.title,
+    gtNome: atualizada.gt_id ? (await gtModel.findById(atualizada.gt_id))?.name : null,
+    mudancas: auditService.diff(antesA, depoisA, [
+      { chave: 'title', rotulo: 'Título' },
+      { chave: 'description', rotulo: 'Descrição' },
+      { chave: 'resp', rotulo: 'Responsável' },
+      { chave: 'prazo', rotulo: 'Prazo', fmt: (x) => fmtData(x) },
+      { chave: 'status', rotulo: 'Status', fmt: lab },
+      { chave: 'lembrete', rotulo: 'Lembrete' },
+    ]),
+  });
 
   // Resumo do que mudou -> mural
   const mudancas = [];

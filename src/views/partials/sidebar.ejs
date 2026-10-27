@@ -46,7 +46,7 @@
       <div class="sidebar-secao"><%= "Comunicação" %></div>
       <a href="/gts/central" class="<%= currentPath.startsWith('/gts/central') ? 'ativo' : '' %>">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 9.5c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6-3.4 6-7.5 6c-.9 0-1.8-.1-2.6-.4L3 17l1-3.4c-.9-1-1.5-2.3-1.5-4.1z"/></svg>
-        Mural
+        Mural e Atas
       </a>
       <a href="/emails/selecionar" class="<%= currentPath.startsWith('/emails') ? 'ativo' : '' %>">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 5.5 10 11l7.5-5.5"/><rect x="2.5" y="4" width="15" height="12" rx="1.6"/></svg>
@@ -73,6 +73,12 @@
       <a href="/pedidos" class="<%= currentPath === '/pedidos' ? 'ativo' : '' %>">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="13" rx="1.6"/><path d="M2.5 8.5h15"/><path d="M6 12.2l2 2 4-4"/></svg>
         Pedidos
+      </a>
+      <% } %>
+      <% if (currentUser.role === 'leader') { %>
+      <a href="/historico" class="<%= currentPath === '/historico' ? 'ativo' : '' %>">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M10 6v4.2l2.8 1.6"/></svg>
+        Histórico
       </a>
       <% } %>
       <% if (currentUser.role !== 'leader') { %>
@@ -110,3 +116,4 @@
     <a href="/auth/logout" class="sair">Sair da conta</a>
   </div>
 </aside>
+<%- include('novidades') %>

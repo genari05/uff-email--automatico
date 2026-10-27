@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><%- include('../partials/head') %></head>
+<body>
+  <div class="app-shell">
+    <%- include('../partials/sidebar') %>
+
+    <div class="app-main">
+      <%- include('../partials/app-topbar', { pageTitle: 'Histórico' }) %>
+
+      <div class="app-content">
+        <div class="card">
+          <h2 style="margin-top:0;">Histórico de edições e exclusões</h2>
+          <p style="color: var(--color-text-muted); margin-top:0;">Quem editou ou excluiu, quando e o quê. Só líderes veem esta página. Mostra os 200 registros mais recentes.</p>
+
+          <form method="GET" action="/historico" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+            <div>
+              <label for="acao" style="margin-top:0;">Ação</label>
+              <select id="acao" name="acao">
+                <option value="">Todas</option>
+                <option value="edit" <%= acao === 'edit' ? 'selected' : '' %>>Edições</option>
+                <option value="delete" <%= acao === 'delete' ? 'selected' : '' %>>Exclusões</option>
+              </select>
+            </div>
+            <div>
+              <label for="tipo" style="margin-top:0;">O quê</label>
+              <select id="tipo" name="tipo">
+                <option value="">Tudo</option>
+                <option value="tarefa" <%= tipo === 'tarefa' ? 'selected' : '' %>>Tarefas</option>
+                <option value="mensagem" <%= tipo === 'mensagem' ? 'selected' : '' %>>Mensagens do mural</option>
+                <option value="pessoa" <%= tipo === 'pessoa' ? 'selected' : '' %>>Pessoas</option>
+                <option value="modelo_email" <%= tipo === 'modelo_email' ? 'selected' : '' %>>Modelos de e-mail</option>
+                <option value="gt" <%= tipo === 'gt' ? 'selected' : '' %>>GTs</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-secundario">Filtrar</button>
+          </form>
+
+          <% if (erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+
+          <% const nomesTipo = { tarefa: 'Tarefa', mensagem: 'Mensagem do mural', pessoa: 'Pessoa', modelo_email: 'Modelo de e-mail', gt: 'GT' }; %>
+          <% if (!erro && registros.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nada registrado ainda</h3>
+              <p>Quando alguém editar ou excluir tarefas, mensagens, pessoas, modelos ou GTs, aparece aqui.</p>
+            </div>
+          <% } else if (registros.length > 0) { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr><th>Quando</th><th>Quem</th><th>Ação</th><th>O quê</th><th>Detalhes</th></tr>
+                </thead>
+                <tbody>
+                  <% registros.forEach(r => { %>
+                    <tr>
+                      <td data-label="Quando"><span class="stat-mono"><%= new Date(r.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></span></td>
+                      <td data-label="Quem"><%= r.actor_name %><% if (r.actor_oculto) { %> <span class="badge">TI</span><% } %></td>
+                      <td data-label="Ação"><span class="badge <%= r.action === 'delete' ? 'badge-negado' : 'badge-pendente' %>"><%= r.action === 'delete' ? 'Excluiu' : 'Editou' %></span></td>
+                      <td data-label="O quê">
+                        <strong><%= nomesTipo[r.entity_type] || r.entity_type %></strong><br>
+                        <%= r.entity_label || '—' %><% if (r.gt_name) { %><br><small style="color:var(--color-text-muted);"><%= r.gt_name %></small><% } %>
+                      </td>
+                      <td data-label="Detalhes">
+                        <% if (r.action === 'edit' && Array.isArray(r.changes)) { %>
+                          <% r.changes.forEach(c => { %>
+                            <div style="margin-bottom:6px;">
+                              <strong><%= c.campo %>:</strong>
+                              <span style="text-decoration:line-through; color:var(--color-text-muted);"><%= c.de %></span>
+                              → <span><%= c.para %></span>
+                            </div>
+                          <% }) %>
+                        <% } else if (r.action === 'delete' && r.snapshot) { %>
+                          <% Object.entries(r.snapshot).forEach(([k, v]) => { %>
+                            <div><strong><%= k %>:</strong> <%= v === null || v === '' ? '—' : v %></div>
+                          <% }) %>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

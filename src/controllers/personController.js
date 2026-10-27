@@ -1,3 +1,4 @@
+const auditService = require('../services/auditService');
 const personModel = require('../models/personModel');
 const userModel = require('../models/userModel');
 const accessRequestModel = require('../models/accessRequestModel');
@@ -274,6 +275,14 @@ async function editarPessoa(req, res) {
     }
 
     await personModel.update(id, { name: name.trim(), email: emailNormalizado });
+    await auditService.registrar(req, {
+      acao: 'edit', entidade: 'pessoa', id, rotulo: pessoa.name,
+      mudancas: auditService.diff(
+        { name: pessoa.name, email: pessoa.email },
+        { name: name.trim(), email: emailNormalizado },
+        [{ chave: 'name', rotulo: 'Nome' }, { chave: 'email', rotulo: 'E-mail' }]
+      ),
+    });
 
     // Se o e-mail mudou, a verificação antiga não vale mais - precisa
     // confirmar de novo pra garantir que o novo e-mail é válido.
@@ -298,6 +307,13 @@ async function editarPessoa(req, res) {
 async function excluirPessoa(req, res) {
   const destino = destinoAposAcao(req);
   try {
+    const alvo = await personModel.findById(req.params.id);
+    if (alvo) {
+      await auditService.registrar(req, {
+        acao: 'delete', entidade: 'pessoa', id: alvo.id, rotulo: alvo.name,
+        snapshot: { 'Nome': alvo.name, 'E-mail': alvo.email },
+      });
+    }
     await personModel.remove(req.params.id);
   } catch (err) {
     console.error(err);

@@ -6,13 +6,13 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: 'Mural' }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Mural e Atas' }) %>
 
       <div class="app-content">
         <div class="card">
           <div class="mural-abas" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-            <a href="/gts/central" class="<%= ver === 'geral' ? 'btn-primario-link' : 'btn-secundario' %>" style="padding:8px 16px; border-radius:999px; font-size:14px; <%= ver === 'geral' ? 'background:var(--color-primary); color:#fff; text-decoration:none;' : '' %>">Geral (todos os GTs)</a>
-            <a href="/gts/central?ver=gt" class="<%= ver === 'gt' ? 'btn-primario-link' : 'btn-secundario' %>" style="padding:8px 16px; border-radius:999px; font-size:14px; <%= ver === 'gt' ? 'background:var(--color-primary); color:#fff; text-decoration:none;' : '' %>">Do meu GT<%= (typeof gtAtivo !== 'undefined' && gtAtivo) ? ' · ' + gtAtivo.name : '' %></a>
+            <a href="/gts/central?ver=gt" class="<%= ver === 'gt' ? 'btn-primario-link' : 'btn-secundario' %>" style="padding:8px 16px; border-radius:999px; font-size:14px; <%= ver === 'gt' ? 'background:var(--color-primary); color:#fff; text-decoration:none;' : '' %>">Mural<%= (typeof gtAtivo !== 'undefined' && gtAtivo) ? ' · ' + gtAtivo.name : ' do meu GT' %></a>
+            <a href="/gts/central?ver=atas" class="<%= ver === 'atas' ? 'btn-primario-link' : 'btn-secundario' %>" style="padding:8px 16px; border-radius:999px; font-size:14px; <%= ver === 'atas' ? 'background:var(--color-primary); color:#fff; text-decoration:none;' : '' %>">Atas GTs</a>
           </div>
 
           <% if (ver === 'gt') { %>
@@ -55,7 +55,7 @@
               </div>
             <% } %>
           <% } else { %>
-          <p style="color: var(--color-text-muted);">Onde os GTs se comunicam entre si — ex: "GT Comunicação avisa o GT Infra que já pode postar".</p>
+          <p style="color: var(--color-text-muted);">Atas GTs: registros compartilhados entre todos os GTs — decisões, avisos e combinados.</p>
 
           <% if (meusGts.length === 0) { %>
             <div class="empty-state">
@@ -65,25 +65,34 @@
             </div>
           <% } else { %>
             <form method="POST" action="/gts/central" class="form" style="max-width:none; margin-bottom: 20px;">
-              <label for="gtId">Postar em nome de</label>
-              <select id="gtId" name="gtId" required>
-                <% meusGts.forEach(m => { %>
-                  <option value="<%= m.gts.id %>"><%= m.gts.name %></option>
-                <% }) %>
-              </select>
+              <% const gtAta = (typeof gtAtivo !== 'undefined' && gtAtivo) ? gtAtivo : (meusGts.length === 1 ? meusGts[0].gts : null); %>
+              <% if (gtAta) { %>
+                <input type="hidden" name="gtId" value="<%= gtAta.id %>">
+                <p style="margin:0 0 8px;">A ata será registrada como:
+                  <strong style="color: <%= gtAta.color %>;"><%= gtAta.name %></strong> ·
+                  <strong><%= currentUser.people.name %></strong>
+                </p>
+              <% } else { %>
+                <label for="gtId">GT que está registrando a ata</label>
+                <select id="gtId" name="gtId" required>
+                  <% meusGts.forEach(m => { %>
+                    <option value="<%= m.gts.id %>"><%= m.gts.name %></option>
+                  <% }) %>
+                </select>
+              <% } %>
 
-              <label for="message">Mensagem</label>
-              <textarea id="message" name="message" rows="3" required placeholder="Ex: pessoal do GT Infra, finalizamos os posts, podem publicar!"></textarea>
+              <label for="message">Ata</label>
+              <textarea id="message" name="message" rows="3" required placeholder="Ex: reunião de quinta: definimos o cronograma de posts."></textarea>
 
-              <button type="submit" style="margin-top:12px;">Enviar</button>
+              <button type="submit" style="margin-top:12px;">Registrar ata</button>
             </form>
           <% } %>
 
           <% if (mensagens.length === 0) { %>
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
-              <h3>Nada por aqui ainda</h3>
-              <p>As mensagens entre GTs vão aparecer aqui, como um grupo geral da equipe.</p>
+              <h3>Nenhuma ata ainda</h3>
+              <p>As atas registradas pelos GTs aparecem aqui.</p>
             </div>
           <% } else { %>
             <div class="mural-chat">
@@ -106,17 +115,17 @@
                       <%= m.message %>
                       <small><%= new Date(m.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %><% if (m.edited_at) { %> · editada<% } %></small>
                       <% const souAutor = m.author_user_id === currentUser.id; %>
-                      <% if (souAutor || currentUser.isTi || currentUser.role === 'leader') { %>
+                      <% { %>
                         <details class="msg-acoes">
                           <summary>Opções</summary>
-                          <% if (souAutor) { %>
+                          <% { %>
                             <form method="POST" action="/gts/central/<%= m.id %>/editar" class="msg-editar">
                               <textarea name="message" rows="3" required><%= m.message %></textarea>
                               <button type="submit" style="padding:5px 12px; font-size:12px;">Salvar edição</button>
                             </form>
                           <% } %>
                           <form method="POST" action="/gts/central/<%= m.id %>/excluir" class="form-excluir-msg" style="display:inline;">
-                            <button type="submit" class="btn-nao" style="padding:5px 12px; font-size:12px;">Excluir mensagem</button>
+                            <button type="submit" class="btn-nao" style="padding:5px 12px; font-size:12px;">Excluir ata</button>
                           </form>
                         </details>
                       <% } %>
@@ -134,7 +143,7 @@
   <script>
     document.querySelectorAll('.form-excluir-msg').forEach((f) => {
       f.addEventListener('submit', (e) => {
-        if (!confirm('Excluir esta mensagem do mural? Não dá para desfazer.')) e.preventDefault();
+        if (!confirm('Excluir esta ata? Não dá para desfazer.')) e.preventDefault();
       });
     });
   </script>

@@ -58,6 +58,10 @@ async function requireAuth(req, res, next) {
     aplicarPapelTi(user);
     req.user = user; // disponível nos controllers/views
     res.locals.currentUser = user;
+    // Alerta "o que mudou": aparece uma vez por pessoa (banco) e por navegador (cookie)
+    const novidades = require('../data/novidades');
+    res.locals.novidades = (user.novidades_versao !== novidades.versao && req.cookies?.novidades_ok !== novidades.versao)
+      ? novidades : null;
     if (user.oculto) ocultoService.marcarRequisicaoOculta(); // ações dela não vão pro feed
 
     // GTs aprovados da pessoa + qual está ativo agora. O GT ativo
@@ -88,11 +92,9 @@ async function requireAuth(req, res, next) {
       });
     }
 
-    // Quem pode editar uma tarefa: quem criou, líder do GT da tarefa, líder geral ou TI
-    req.podeEditarTarefa = (t) => !!t && (
-      user.isTi || user.role === 'leader' || t.created_by === user.id
-      || req.meusGts.some((m) => m.role === 'leader' && m.gt_id === t.gt_id)
-    );
+    // Qualquer pessoa logada pode editar/excluir qualquer tarefa;
+    // tudo fica registrado no Histórico (visível só pros líderes).
+    req.podeEditarTarefa = (t) => !!t;
     res.locals.podeEditarTarefa = req.podeEditarTarefa;
 
     req.gtAtivo = membershipAtiva ? membershipAtiva.gts : null;

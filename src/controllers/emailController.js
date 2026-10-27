@@ -1,3 +1,4 @@
+const auditService = require('../services/auditService');
 const personModel = require('../models/personModel');
 const emailModel = require('../models/emailModel');
 const gtMembershipModel = require('../models/gtMembershipModel');
@@ -136,7 +137,8 @@ async function criarTemplate(req, res) {
   }
 }
 
-const podeMexerNoModelo = (req, t) => t && (req.user.role === 'leader' || t.created_by === req.user.id);
+// Qualquer pessoa logada pode editar/excluir modelos; fica no Histórico.
+const podeMexerNoModelo = (req, t) => !!t;
 
 // GET /emails/templates/:id/editar
 async function formEditarTemplate(req, res) {
@@ -160,6 +162,14 @@ async function salvarTemplate(req, res) {
     return res.render('dashboard/template-editar', { title: 'Editar modelo', t: { ...t, title, subject, body }, erro: 'Preencha nome, assunto e corpo.' });
   }
   await emailModel.updateTemplate(t.id, { title: title.trim(), subject: subject.trim(), body });
+  await auditService.registrar(req, {
+    acao: 'edit', entidade: 'modelo_email', id: t.id, rotulo: t.title,
+    mudancas: auditService.diff(
+      { title: t.title, subject: t.subject, body: t.body },
+      { title: title.trim(), subject: subject.trim(), body },
+      [{ chave: 'title', rotulo: 'Nome' }, { chave: 'subject', rotulo: 'Assunto' }, { chave: 'body', rotulo: 'Corpo' }]
+    ),
+  });
   res.redirect('/emails/tipo');
 }
 
@@ -167,7 +177,13 @@ async function salvarTemplate(req, res) {
 async function excluirTemplate(req, res) {
   try {
     const t = await emailModel.findTemplateById(req.params.id);
-    if (t && podeMexerNoModelo(req, t)) await emailModel.deleteTemplate(t.id);
+    if (t && podeMexerNoModelo(req, t)) {
+      await emailModel.deleteTemplate(t.id);
+      await auditService.registrar(req, {
+        acao: 'delete', entidade: 'modelo_email', id: t.id, rotulo: t.title,
+        snapshot: { 'Nome': t.title, 'Assunto': t.subject, 'Corpo': t.body },
+      });
+    }
   } catch (err) {
     console.error('Não foi possível excluir o modelo (talvez esteja em uso):', err.message);
   }

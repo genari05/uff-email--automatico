@@ -173,7 +173,13 @@ async function findById(id) {
   return data;
 }
 
+async function marcarNovidadesVistas(id, versao) {
+  const { error } = await supabase.from(TABLE).update({ novidades_versao: versao }).eq('id', id);
+  if (error) throw error;
+}
+
 module.exports = {
+  marcarNovidadesVistas,
   createForPerson,
   findByPersonId,
   findByPasswordSetToken,

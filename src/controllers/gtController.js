@@ -1,3 +1,4 @@
+const auditService = require('../services/auditService');
 const gtModel = require('../models/gtModel');
 const gtMembershipModel = require('../models/gtMembershipModel');
 const {
@@ -116,6 +117,14 @@ async function salvarGt(req, res) {
     return res.render('gts/editar', { title: 'Editar GT', gt: { ...req.gt, name, description, color }, erro: 'Cor inválida.' });
   }
   await gtModel.update(req.gt.id, { name, description: description || null, color });
+  await auditService.registrar(req, {
+    acao: 'edit', entidade: 'gt', id: req.gt.id, rotulo: req.gt.name,
+    mudancas: auditService.diff(
+      { name: req.gt.name, description: req.gt.description, color: req.gt.color },
+      { name, description, color },
+      [{ chave: 'name', rotulo: 'Nome' }, { chave: 'description', rotulo: 'Descrição' }, { chave: 'color', rotulo: 'Cor' }]
+    ),
+  });
   res.redirect(`/gts/${req.gt.slug}`);
 }
 

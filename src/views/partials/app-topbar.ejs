@@ -4,7 +4,7 @@
   if (_p === '/tarefas' || _p.startsWith('/ti')) _secao = 'Administração (TI)';
   else if (_p.startsWith('/tarefas') || /^\/gts\/(?!central|pendentes)[^/]+(\/(tarefas|editar).*)?$/.test(_p) && _p !== '/gts') _secao = 'Tarefas';
   else if (_p.startsWith('/gts/central') || _p.startsWith('/emails')) _secao = 'Comunicação';
-  else if (_p.startsWith('/gts') || _p.startsWith('/pessoas') || _p.startsWith('/pedidos') || _p.startsWith('/acesso') || _p.startsWith('/perfil')) _secao = 'Equipe';
+  else if (_p.startsWith('/gts') || _p.startsWith('/pessoas') || _p.startsWith('/pedidos') || _p.startsWith('/historico') || _p.startsWith('/acesso') || _p.startsWith('/perfil')) _secao = 'Equipe';
 %>
 <div class="app-topbar">
   <div>
