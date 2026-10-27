@@ -195,21 +195,6 @@ async function verStatus(req, res) {
   }
 }
 
-// GET /acesso/pendentes -> painel do líder (protegido por requireAuth + requireLeader)
-async function listarPendentes(req, res) {
-  const todosPedidos = await accessRequestModel.listPending();
-  const pedidosAcesso = todosPedidos.filter((p) => p.request_type === 'access');
-  const pedidosLider = todosPedidos.filter((p) => p.request_type === 'leader');
-  res.render('dashboard/pedidos-acesso', {
-    title: 'Pedidos de acesso',
-    pedidosAcesso,
-    pedidosLider,
-    erro: req.query.erro === 'nao_verificado'
-      ? 'Esse e-mail ainda não foi verificado. Não é possível aprovar o acesso até a pessoa confirmar o e-mail.'
-      : null,
-  });
-}
-
 // POST /acesso/:id/resolver -> líder aprova ou nega (pedido de acesso OU de virar líder)
 async function resolver(req, res) {
   try {
@@ -217,12 +202,12 @@ async function resolver(req, res) {
     const { decisao } = req.body; // 'approved' | 'denied'
 
     const pedido = await accessRequestModel.findById(id);
-    if (!pedido) return res.redirect('/acesso/pendentes');
+    if (!pedido) return res.redirect('/pedidos');
 
     // REGRA: não dá pra aprovar acesso de um e-mail que ainda não foi
     // confirmado - a verificação é sempre pelo link do e-mail, nunca manual.
     if (decisao === 'approved' && pedido.request_type === 'access' && !pedido.people.verified) {
-      return res.redirect('/acesso/pendentes?erro=nao_verificado');
+      return res.redirect('/pedidos?erro=nao_verificado');
     }
 
     await accessRequestModel.resolve(id, { status: decisao, resolvedBy: req.user.id });
@@ -247,10 +232,10 @@ async function resolver(req, res) {
       await userModel.promoteToLeader(pedido.person_id);
     }
 
-    res.redirect('/acesso/pendentes');
+    res.redirect('/pedidos');
   } catch (err) {
     console.error(err);
-    res.redirect('/acesso/pendentes');
+    res.redirect('/pedidos');
   }
 }
 
@@ -261,6 +246,5 @@ module.exports = {
   solicitarLider,
   formStatus,
   verStatus,
-  listarPendentes,
   resolver,
 };

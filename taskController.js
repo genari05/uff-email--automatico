@@ -213,7 +213,7 @@ async function listarTarefas(req, res) {
   const papeis = await userModel.findRolesByPersonIds(idsUnicos);
   const atividadesComPapel = atividades.map((a) => ({ ...a, papel: papeis[a.person_id] || 'member' }));
 
-  res.render('tasks/lista', { title: 'Tarefas', tarefas, atividades: atividadesComPapel });
+  res.render('tasks/lista', { title: 'Visão geral (tudo)', tarefas, atividades: atividadesComPapel });
 }
 
 // GET /tarefas/minhas -> tarefas da pessoa logada
@@ -342,7 +342,7 @@ async function desempenho(req, res) {
   }
   const porPessoa = Array.from(porPessoaMap.values()).sort((a, b) => b.total - a.total);
 
-  res.render('tasks/desempenho', { title: 'Desempenho da equipe', resumo, porPessoa });
+  res.render('tasks/desempenho', { title: 'Desempenho', resumo, porPessoa });
 }
 
 // POST /tarefas/:id/excluir -> só o líder pode excluir
@@ -399,7 +399,7 @@ async function statusLembretes(req, res) {
   });
 
   res.render('tasks/lembretes', {
-    title: 'Status de e-mails',
+    title: 'Lembretes enviados',
     tarefas: comStatus,
     resultado: req.query.resultado || null,
   });

@@ -58,14 +58,6 @@ async function pedirEntrada(req, res) {
   }
 }
 
-// GET /gts/pendentes -> pedidos de entrada pendentes nos GTs que a pessoa lidera
-async function listarPendentes(req, res) {
-  const pedidos = req.user.isTi
-    ? await gtMembershipModel.listPendingAll()
-    : await gtMembershipModel.listPendingForLeaderGts(req.user.id);
-  res.render('gts/pendentes', { title: 'Pedidos de entrada em GTs', pedidos });
-}
-
 // POST /gts/pendentes/:id/resolver -> aprova ou nega um pedido de entrada
 async function resolverPendente(req, res) {
   try {
@@ -73,7 +65,7 @@ async function resolverPendente(req, res) {
     const { decisao } = req.body; // 'approved' | 'denied'
 
     const membership = await gtMembershipModel.findById(id);
-    if (!membership) return res.redirect('/gts/pendentes');
+    if (!membership) return res.redirect('/pedidos');
 
     // Só o líder do GT em questão pode resolver esse pedido específico
     const souLiderDesseGt = req.user.isTi
@@ -100,10 +92,10 @@ async function resolverPendente(req, res) {
       }).catch((err) => console.error('Erro ao notificar resultado do pedido de GT:', err.message));
     }
 
-    res.redirect('/gts/pendentes');
+    res.redirect('/pedidos');
   } catch (err) {
     console.error(err);
-    res.redirect('/gts/pendentes');
+    res.redirect('/pedidos');
   }
 }
 
@@ -153,7 +145,6 @@ async function ativarGt(req, res) {
 module.exports = {
   listarGts,
   pedirEntrada,
-  listarPendentes,
   resolverPendente,
   ativarGt,
   formEditarGt,

@@ -14,7 +14,7 @@ router.post('/:slug/entrar', gtController.pedirEntrada);
 
 // Pedidos de entrada pendentes (líder de qualquer GT que lidere)
 // -> precisa vir ANTES de /:slug pra não ser confundido com um slug
-router.get('/pendentes', gtController.listarPendentes);
+router.get('/pendentes', (req, res) => res.redirect('/pedidos'));
 router.post('/pendentes/:id/resolver', gtController.resolverPendente);
 
 // Mural central entre GTs (qualquer pessoa com pelo menos 1 GT aprovado)

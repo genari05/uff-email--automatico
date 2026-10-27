@@ -6,7 +6,7 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: 'Nova tarefa - ' + gt.name }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Nova tarefa' }) %>
 
       <div class="app-content">
         <div class="card" style="max-width: 640px; margin: 0 auto;">
@@ -98,11 +98,6 @@
   </div>
 
   <script>
-    if (new URLSearchParams(location.search).get('outro') === '1') {
-      const sel = document.getElementById('targetGtId');
-      const outro = Array.from(sel.options).find((o) => !o.text.includes('(este GT)'));
-      if (outro) sel.value = outro.value;
-    }
     const PORTA_MEMBROS_POR_GT = <%- JSON.stringify(porGt) %>;
 
     const targetGtSelect = document.getElementById('targetGtId');

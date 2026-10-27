@@ -15,7 +15,7 @@ router.get('/virar-lider', requireAuth, accessRequestController.formSolicitarLid
 router.post('/virar-lider', requireAuth, accessRequestController.solicitarLider);
 
 // Protegidas - só o líder aprova/nega
-router.get('/pendentes', requireAuth, requireLeader, accessRequestController.listarPendentes);
+router.get('/pendentes', (req, res) => res.redirect('/pedidos'));
 router.post('/:id/resolver', requireAuth, requireLeader, accessRequestController.resolver);
 
 module.exports = router;

@@ -6,7 +6,7 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: gt.name }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Tarefas do ' + gt.name }) %>
 
       <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
         <div class="card" style="border-top: 3px solid <%= gt.color %>;">
@@ -17,7 +17,6 @@
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <a href="/gts/<%= gt.slug %>/tarefas/nova"><button type="button">+ Nova tarefa</button></a>
-              <a href="/gts/<%= gt.slug %>/tarefas/nova?outro=1"><button type="button" class="btn-secundario">➜ Enviar tarefa para outro GT</button></a>
               <% if (gtMembership.role === 'leader') { %>
                 <a href="/gts/<%= gt.slug %>/editar"><button type="button" class="btn-secundario">Editar GT</button></a>
               <% } %>

@@ -5,6 +5,7 @@ router.get('/', (req, res) => res.redirect('/auth/login'));
 
 router.use('/pessoas', require('./personRoutes'));
 router.use('/auth', require('./authRoutes'));
+router.use('/pedidos', require('./pedidoRoutes'));
 router.use('/acesso', require('./accessRequestRoutes'));
 router.use('/emails', require('./emailRoutes'));
 router.use('/tarefas', require('./taskRoutes'));

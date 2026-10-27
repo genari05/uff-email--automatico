@@ -19,8 +19,8 @@ router.get('/:id/editar', taskEditController.formEditar);
 router.post('/:id/editar', taskEditController.salvarEdicao);
 router.post('/', taskController.criarTarefa);
 
-router.get('/lembretes', taskController.statusLembretes);
-router.post('/lembretes/verificar-agora', taskController.forcarVerificacao);
+router.get('/lembretes', requireLeader, taskController.statusLembretes);
+router.post('/lembretes/verificar-agora', requireLeader, taskController.forcarVerificacao);
 
 // Só o líder aprova/nega tarefas atribuídas por membros
 router.get('/aprovacao', requireLeader, taskController.listarAprovacao);
