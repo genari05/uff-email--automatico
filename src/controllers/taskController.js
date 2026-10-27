@@ -1,4 +1,5 @@
 const taskModel = require('../models/taskModel');
+const { destinoTarefa } = require('../utils/destinoTarefa');
 const gtModel = require('../models/gtModel');
 const { hojeSP, momentoSP } = require('../utils/datas');
 const activityModel = require('../models/activityModel');
@@ -360,13 +361,8 @@ async function excluirTarefa(req, res) {
       });
     }
 
-    let destino = '/tarefas/minhas';
-    if (task.gt_id) {
-      const gt = await gtModel.findById(task.gt_id);
-      if (gt) destino = `/gts/${gt.slug}`;
-    } else if (req.user.role === 'leader') {
-      destino = '/tarefas';
-    }
+    let destino = destinoTarefa(req, task);
+    if (destino === '/tarefas/minhas' && !task.gt_id && req.user.role === 'leader') destino = '/tarefas';
 
     // Apaga o rastro dessa tarefa no mural também (sem deixar nem
     // um aviso novo de exclusão) - some por completo.

@@ -30,8 +30,11 @@ async function membrosPorGt(gts) {
 // GET /gts/:slug -> painel do GT: só as tarefas daquele GT
 async function painelGt(req, res) {
   const gt = req.gt;
-  const tarefas = await taskModel.listVisibleByGt(gt.id);
-  res.render('gts/painel', { title: 'Tarefas do ' + gt.name, gt, tarefas });
+  const [tarefas, enviadas] = await Promise.all([
+    taskModel.listVisibleByGt(gt.id),
+    taskModel.listSentFromGt(gt.id),
+  ]);
+  res.render('gts/painel', { title: 'Tarefas do ' + gt.name, gt, tarefas, enviadas, aviso: req.query.ok || null });
 }
 
 // POST /gts/:slug/equipe/:membershipId/papel -> líder do GT dá/tira a liderança
@@ -207,7 +210,12 @@ async function criarTarefaGt(req, res) {
       });
     }
 
-    res.redirect(`/gts/${targetGt.slug}`);
+    if (crossGt) {
+      // Quem criou não é (necessariamente) do GT de destino: volta pro próprio GT
+      const aviso = `Tarefa enviada para ${task.people.name} (${targetGt.name}).`;
+      return res.redirect(`/gts/${gt.slug}?ok=${encodeURIComponent(aviso)}`);
+    }
+    res.redirect(`/gts/${gt.slug}`);
   } catch (err) {
     console.error(err);
     await rerender('Erro ao criar tarefa. Tente novamente.');

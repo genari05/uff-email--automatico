@@ -25,6 +25,8 @@
           </div>
         </div>
 
+        <% if (typeof aviso !== 'undefined' && aviso) { %><p class="alerta alerta-sucesso" style="margin:0;"><%= aviso %></p><% } %>
+
         <div class="card">
           <h2 style="margin-top:0;">Tarefas do <%= gt.name %></h2>
 
@@ -77,6 +79,39 @@
             </div>
           <% } %>
         </div>
+
+        <% if (typeof enviadas !== 'undefined' && enviadas.length > 0) { %>
+        <div class="card">
+          <h2 style="margin-top:0;">Enviadas para outros GTs</h2>
+          <p style="color: var(--color-text-muted); margin-top:0;">Tarefas que o <%= gt.name %> mandou para pessoas de outros GTs. Se errou algo, edite ou exclua daqui.</p>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th>Tarefa</th><th>Responsável</th><th>GT</th><th>Prazo</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <% enviadas.forEach(t => { %>
+                  <tr>
+                    <td data-label="Tarefa"><%= t.title %></td>
+                    <td data-label="Responsável"><%= t.people.name %></td>
+                    <td data-label="GT"><%= t.destino ? t.destino.name : '' %></td>
+                    <td data-label="Prazo"><%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></td>
+                    <td data-label="Status"><span class="badge <%= t.status === 'completed' ? 'badge-sucesso' : 'badge-pendente' %>"><%= t.status === 'completed' ? 'Concluída' : 'Pendente' %></span></td>
+                    <td data-label="">
+                      <% if (podeEditarTarefa(t)) { %>
+                        <div style="display:flex; gap:6px;">
+                          <a href="/tarefas/<%= t.id %>/editar" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Editar</a>
+                          <form method="POST" action="/tarefas/<%= t.id %>/excluir" class="form-excluir-tarefa">
+                            <button type="submit" class="btn-nao" style="padding:5px 10px; font-size:12px;">Excluir</button>
+                          </form>
+                        </div>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <% } %>
       </div>
     </div>
   </div>

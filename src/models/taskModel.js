@@ -34,6 +34,22 @@ async function listVisible() {
 }
 
 /**
+ * Tarefas que este GT enviou para OUTROS GTs (aparecem no painel do
+ * GT de origem, pra quem enviou conseguir acompanhar/editar/excluir).
+ */
+async function listSentFromGt(gtId) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*, people:responsible_person_id(*), destino:gt_id(name, color)')
+    .eq('origin_gt_id', gtId)
+    .neq('gt_id', gtId)
+    .in('status', ['pending', 'completed'])
+    .order('deadline_date', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+/**
  * Tarefas de uma pessoa específica (para a tela "Minhas tarefas").
  * Só mostra tarefas já ativas (aprovadas), não as pendentes de aprovação.
  */
@@ -190,6 +206,7 @@ async function listAwaitingApprovalByGt(gtId) {
 }
 
 module.exports = {
+  listSentFromGt,
   create,
   findById,
   listVisible,

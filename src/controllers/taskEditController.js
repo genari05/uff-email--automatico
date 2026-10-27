@@ -1,6 +1,7 @@
 const taskModel = require('../models/taskModel');
 const personModel = require('../models/personModel');
 const emailModel = require('../models/emailModel');
+const { destinoTarefa } = require('../utils/destinoTarefa');
 const gtModel = require('../models/gtModel');
 const gtMembershipModel = require('../models/gtMembershipModel');
 const activityModel = require('../models/activityModel');
@@ -23,12 +24,8 @@ async function opcoesResponsavel(task) {
   return pessoas.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-async function destinoDepois(task) {
-  if (task.gt_id) {
-    const gt = await gtModel.findById(task.gt_id);
-    if (gt) return `/gts/${gt.slug}`;
-  }
-  return '/tarefas/minhas';
+async function destinoDepois(req, task) {
+  return destinoTarefa(req, task);
 }
 
 async function carregarTarefa(req, res) {
@@ -47,11 +44,11 @@ async function carregarTarefa(req, res) {
   return task;
 }
 
-async function renderForm(res, task, { erro = null, valores = null } = {}) {
+async function renderForm(req, res, task, { erro = null, valores = null } = {}) {
   const [pessoas, templates, voltar] = await Promise.all([
     opcoesResponsavel(task),
     emailModel.listTemplates(),
-    destinoDepois(task),
+    destinoDepois(req, task),
   ]);
   res.render('tasks/editar', {
     title: 'Editar tarefa',
@@ -69,7 +66,7 @@ async function renderForm(res, task, { erro = null, valores = null } = {}) {
 async function formEditar(req, res) {
   const task = await carregarTarefa(req, res);
   if (!task) return;
-  await renderForm(res, task);
+  await renderForm(req, res, task);
 }
 
 // POST /tarefas/:id/editar
@@ -79,7 +76,7 @@ async function salvarEdicao(req, res) {
 
   const b = req.body;
   const hoje = hojeSP();
-  const falha = (erro) => renderForm(res, task, { erro, valores: b });
+  const falha = (erro) => renderForm(req, res, task, { erro, valores: b });
 
   const title = (b.title || '').trim();
   if (!title) return falha('O título não pode ficar vazio.');
@@ -165,7 +162,7 @@ async function salvarEdicao(req, res) {
     }).catch((err) => console.error('Erro ao avisar novo responsável:', err.message));
   }
 
-  res.redirect(await destinoDepois(atualizada));
+  res.redirect(await destinoDepois(req, atualizada));
 }
 
 module.exports = { formEditar, salvarEdicao };
