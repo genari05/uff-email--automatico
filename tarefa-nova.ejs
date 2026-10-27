@@ -121,6 +121,10 @@
       membros.forEach((m) => adicionar(m.personId, m.name));
     }
     targetGtSelect.addEventListener('change', atualizarResponsaveis);
+    if (new URLSearchParams(location.search).get('outro') === '1') {
+      const outro = Array.from(targetGtSelect.options).find((o) => !o.text.includes('(este GT)'));
+      if (outro) targetGtSelect.value = outro.value;
+    }
     atualizarResponsaveis();
 
     const checkboxLembrete = document.getElementById('sendReminder');

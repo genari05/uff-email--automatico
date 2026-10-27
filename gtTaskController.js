@@ -27,37 +27,17 @@ async function membrosPorGt(gts) {
   return porGt;
 }
 
-// GET /gts/:slug -> painel interno do GT (mural + tarefas daquele GT)
+// GET /gts/:slug -> painel do GT: só as tarefas daquele GT
 async function painelGt(req, res) {
   const gt = req.gt;
-
-  const [tarefas, atividades] = await Promise.all([
-    taskModel.listVisibleByGt(gt.id),
-    activityModel.listRecentByGt(gt.id, 30),
-  ]);
-
-  const idsUnicos = [...new Set(atividades.filter((a) => a.person_id).map((a) => a.person_id))];
-  const papeis = await userModel.findRolesByPersonIds(idsUnicos);
-  const atividadesComPapel = atividades.map((a) => ({ ...a, papel: papeis[a.person_id] || 'member' }));
-
-  const equipe = (await gtMembershipModel.listApprovedMembersOfGt(gt.id))
-    .filter((m) => m.users?.people)
-    .sort((a, b) => (a.role === b.role ? a.users.people.name.localeCompare(b.users.people.name) : a.role === 'leader' ? -1 : 1));
-
-  res.render('gts/painel', {
-    title: gt.name,
-    gt,
-    tarefas,
-    atividades: atividadesComPapel,
-    equipe,
-    aviso: req.query.ok || null,
-  });
+  const tarefas = await taskModel.listVisibleByGt(gt.id);
+  res.render('gts/painel', { title: 'Tarefas do ' + gt.name, gt, tarefas });
 }
 
 // POST /gts/:slug/equipe/:membershipId/papel -> líder do GT dá/tira a liderança
 async function alterarPapelNoGt(req, res) {
   const gt = req.gt;
-  const voltar = (msg) => res.redirect(`/gts/${gt.slug}?ok=${encodeURIComponent(msg)}#equipe`);
+  const voltar = (msg) => res.redirect(`/pessoas?ok=${encodeURIComponent(msg)}`);
   try {
     const { membershipId } = req.params;
     const { papel } = req.body; // 'leader' | 'member'

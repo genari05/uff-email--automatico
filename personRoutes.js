@@ -15,7 +15,11 @@ router.get('/verificar/:token', personController.verificarEmail);
 
 // Lista de pessoas cadastradas: visão administrativa, só do líder.
 // Membros não veem essa aba nem acessam a URL direto.
-router.get('/', requireAuth, requireLeader, personController.listarPessoas);
+router.get('/', requireAuth, (req, res, next) => {
+  const liderDeGt = (req.meusGts || []).some((m) => m.role === 'leader');
+  if (req.user.role === 'leader' || liderDeGt) return next();
+  return requireLeader(req, res, next);
+}, personController.listarPessoas);
 
 // Editar/excluir: a própria pessoa pode mexer na conta dela,
 // e o líder pode mexer em qualquer uma.

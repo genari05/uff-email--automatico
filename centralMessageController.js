@@ -1,15 +1,30 @@
 const gtMembershipModel = require('../models/gtMembershipModel');
 const centralMessageModel = require('../models/centralMessageModel');
+const activityModel = require('../models/activityModel');
+const userModel = require('../models/userModel');
 
 // GET /gts/central -> mural central, onde os GTs se comunicam entre si
 async function listarMuralCentral(req, res) {
+  const ver = req.query.ver === 'gt' ? 'gt' : 'geral';
+  const gtAtivo = req.gtAtivo || null;
+
+  let atividades = [];
+  if (ver === 'gt' && gtAtivo) {
+    const lista = await activityModel.listRecentByGt(gtAtivo.id, 30);
+    const ids = [...new Set(lista.filter((a) => a.person_id).map((a) => a.person_id))];
+    const papeis = await userModel.findRolesByPersonIds(ids);
+    atividades = lista.map((a) => ({ ...a, papel: papeis[a.person_id] || 'member' }));
+  }
+
   const [mensagens, meusGts] = await Promise.all([
-    centralMessageModel.listRecent(50),
+    ver === 'geral' ? centralMessageModel.listRecent(50) : Promise.resolve([]),
     gtMembershipModel.listApprovedByUser(req.user.id),
   ]);
 
   res.render('gts/central', {
-    title: 'Mural central dos GTs',
+    title: 'Mural',
+    ver,
+    atividades,
     mensagens,
     meusGts, // pra escolher "em nome de qual GT" a pessoa está postando
   });

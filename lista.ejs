@@ -6,56 +6,141 @@
     <%- include('../partials/sidebar') %>
 
     <div class="app-main">
-      <%- include('../partials/app-topbar', { pageTitle: 'Visão geral (tudo)' }) %>
+      <%- include('../partials/app-topbar', { pageTitle: 'Pessoas' }) %>
 
-      <div class="app-content" style="display:flex; flex-direction:column; gap:24px;">
+      <div class="app-content">
         <div class="card">
-          <h2 style="margin-top:0;">Todas as tarefas</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom: 16px;">
+            <% if (typeof visaoGeral !== 'undefined' && visaoGeral) { %>
+              <span class="badge badge-lider">Visão geral · todas as pessoas do site</span>
+            <% } else if (typeof gtAtivo !== 'undefined' && gtAtivo) { %>
+              <span class="badge" style="background: <%= gtAtivo.color %>1a; color: <%= gtAtivo.color %>; border:none;">
+                Pessoas do <%= gtAtivo.name %>
+              </span>
+            <% } %>
+            <p style="margin:0;"><a href="/pessoas/nova">+ Cadastrar nova pessoa</a></p>
+          </div>
 
-          <% if (tarefas.length === 0) { %>
+          <% if (typeof erro !== 'undefined' && erro) { %><p class="alerta alerta-erro"><%= erro %></p><% } %>
+          <% if (typeof sucesso !== 'undefined' && sucesso) { %><p class="alerta alerta-sucesso"><%= sucesso %></p><% } %>
+
+          <% const vg = typeof visaoGeral !== 'undefined' && visaoGeral; %>
+          <% const gtsDe = (typeof gtsPorPessoa !== 'undefined' && gtsPorPessoa) ? gtsPorPessoa : {}; %>
+          <% const papeisDe = (typeof papeis !== 'undefined' && papeis) ? papeis : {}; %>
+          <% if (!vg && (typeof gtAtivo === 'undefined' || !gtAtivo)) { %>
             <div class="empty-state">
               <div class="empty-state-icon">Ψ</div>
-              <h3>Nenhuma tarefa cadastrada ainda</h3>
-              <p>Assim que alguém criar uma tarefa, ela aparece aqui com o responsável, prazo e status de todos.</p>
+              <% if (typeof meusGts !== 'undefined' && meusGts.length > 1) { %>
+                <h3>Escolha um GT pra ver as pessoas dele</h3>
+                <p>Você participa de mais de um GT. Clique no ícone do GT na barra lateral pra escolher qual ver aqui.</p>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
+                  <% meusGts.forEach(m => { %>
+                    <form method="POST" action="/gts/<%= m.gts.slug %>/ativar" style="display:inline;">
+                      <button type="submit" class="btn-secundario" style="padding:6px 14px; font-size:13px; border-color: <%= m.gts.color %>; color: <%= m.gts.color %>;"><%= m.gts.name %></button>
+                    </form>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <h3>Você ainda não faz parte de nenhum GT</h3>
+                <p>Peça entrada em um GT na tela de Grupos de Trabalho pra poder ver e cadastrar pessoas por lá.</p>
+                <a href="/gts" class="btn-secundario" style="margin-top:8px;">Ver Grupos de Trabalho</a>
+              <% } %>
+            </div>
+          <% } else if (pessoas.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">Ψ</div>
+              <h3>Nenhuma pessoa <%= vg ? 'cadastrada' : 'no ' + gtAtivo.name %> ainda</h3>
+              <p>Cadastre a primeira pessoa, ou aprove pedidos de entrada nesse GT, pra montar a equipe por aqui.</p>
             </div>
           <% } else { %>
             <div class="table-wrapper">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Tarefa</th>
-                    <th>Responsável</th>
-                    <th>Prazo</th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <% if (vg) { %><th>GTs</th><% } %>
+                    <% if (!vg) { %><th>Papel no GT</th><% } %>
+                    <th>Liderança</th>
                     <th>Status</th>
-                    <th></th>
+                    <th>Cadastrado em</th>
+                    <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <% tarefas.forEach(t => { %>
+                  <% pessoas.forEach(p => { %>
+                    <% const souEu = p.id === currentUser.person_id; %>
+                    <% const souLider = currentUser.role === 'leader'; %>
                     <tr>
-                      <td data-label="Tarefa"><%= t.title %></td>
-                      <td data-label="Responsável"><%= t.people.name %></td>
-                      <td data-label="Prazo"><%= new Date(t.deadline_date).toLocaleDateString('pt-BR') %></td>
-                      <td data-label="Status">
-                        <% if (t.status === 'completed') { %>
-                          <span class="badge badge-sucesso">Concluída</span>
-                        <% } else if (t.status === 'denied') { %>
-                          <span class="badge badge-negado">Negada</span>
-                        <% } else { %>
-                          <span class="badge badge-pendente">Pendente</span>
-                        <% } %>
-                      </td>
-                      <td data-label="">
-                        <div style="display:flex; gap:6px;">
-                          <% if (podeEditarTarefa(t)) { %>
-                            <a href="/tarefas/<%= t.id %>/editar" class="btn-secundario" style="padding:6px 12px; font-size:12.5px;">Editar</a>
+                      <td data-label="Nome">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <% if (p.avatar_url) { %>
+                            <img src="<%= p.avatar_url %>" alt="" style="width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+                          <% } else { %>
+                            <div style="width:28px; height:28px; border-radius:50%; background:var(--color-primary-soft); color:var(--color-primary);
+                                        display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">
+                              <%= p.name.charAt(0).toUpperCase() %>
+                            </div>
                           <% } %>
-                          <% if (currentUser.role === 'leader') { %>
-                            <form method="POST" action="/tarefas/<%= t.id %>/excluir" class="form-excluir-tarefa">
-                              <button type="submit" class="btn-nao" style="padding:6px 12px; font-size:12.5px;">Excluir</button>
+                          <span><%= p.name %><% if (souEu) { %> <span class="badge badge-lider">você</span><% } %></span>
+                        </div>
+                      </td>
+                      <td data-label="E-mail"><span class="stat-mono"><%= p.email %></span></td>
+                      <% if (vg) { %>
+                        <td data-label="GTs">
+                          <% (gtsDe[p.id] || []).forEach(g => { %>
+                            <span class="badge" style="background: <%= g.color %>1a; color: <%= g.color %>; border:none; margin:0 4px 4px 0;"><%= g.name.replace('GT ', '') %><%= g.papel === 'leader' ? ' ★' : '' %></span>
+                          <% }) %>
+                          <% if (!(gtsDe[p.id] || []).length) { %><span style="color:var(--color-text-muted); font-size:12.5px;">sem GT</span><% } %>
+                        </td>
+                      <% } %>
+                      <% if (!vg) { %>
+                      <td data-label="Papel no GT">
+                        <% const vinc = (typeof vinculoPorPessoa !== 'undefined' && vinculoPorPessoa[p.id]) || null; %>
+                        <% const souLiderGt = typeof gtAtivoMembership !== 'undefined' && gtAtivoMembership && gtAtivoMembership.role === 'leader'; %>
+                        <% if (vinc) { %>
+                          <span class="badge <%= vinc.role === 'leader' ? 'badge-lider' : '' %>"><%= vinc.role === 'leader' ? 'Líder do GT' : 'Membro' %></span>
+                          <% if (souLiderGt && !souEu) { %>
+                            <form method="POST" action="/gts/<%= gtAtivo.slug %>/equipe/<%= vinc.id %>/papel" style="display:inline;">
+                              <input type="hidden" name="papel" value="<%= vinc.role === 'leader' ? 'member' : 'leader' %>">
+                              <button type="submit" class="btn-link-inline"><%= vinc.role === 'leader' ? 'Tirar liderança' : 'Tornar líder' %></button>
                             </form>
                           <% } %>
-                        </div>
+                        <% } %>
+                      </td>
+                      <% } %>
+                      <td data-label="Liderança">
+                        <% const ehLiderGeral = papeisDe[p.id] === 'leader'; %>
+                        <span class="badge <%= ehLiderGeral ? 'badge-lider' : '' %>"><%= ehLiderGeral ? 'Líder geral' : 'Membro' %></span>
+                        <% if (souLider && !souEu) { %>
+                          <form method="POST" action="/pessoas/<%= p.id %>/papel" style="display:inline;">
+                            <input type="hidden" name="papel" value="<%= ehLiderGeral ? 'member' : 'leader' %>">
+                            <button type="submit" class="btn-link-inline"><%= ehLiderGeral ? 'Tirar liderança' : 'Tornar líder' %></button>
+                          </form>
+                        <% } %>
+                      </td>
+                      <td data-label="Status">
+                        <span class="badge <%= p.verified ? 'badge-sucesso' : 'badge-pendente' %>">
+                          <%= p.verified ? 'Verificado' : 'Pendente' %>
+                        </span>
+                        <% if (currentUser.role === 'leader' && !p.verified) { %>
+                          <form method="POST" action="/pessoas/<%= p.id %>/reenviar-verificacao" style="display:inline;">
+                            <button type="submit" class="btn-link-inline">Reenviar e-mail</button>
+                          </form>
+                        <% } %>
+                      </td>
+                      <td data-label="Cadastrado em"><span class="stat-mono"><%= new Date(p.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></span></td>
+                      <td data-label="Ações">
+                        <% if (souLider || souEu) { %>
+                          <div style="display:flex; gap:6px;">
+                            <a href="/pessoas/<%= p.id %>/editar" class="btn-secundario" style="padding:5px 10px; font-size:12px;">Editar</a>
+                            <form method="POST" action="/pessoas/<%= p.id %>/excluir" class="form-excluir-pessoa" style="display:inline">
+                              <button type="submit" class="btn-nao" style="padding:5px 10px; font-size:12px;">Excluir</button>
+                            </form>
+                          </div>
+                        <% } else { %>
+                          <span style="color:var(--color-text-muted); font-size:12.5px;">—</span>
+                        <% } %>
                       </td>
                     </tr>
                   <% }) %>
@@ -64,51 +149,14 @@
             </div>
           <% } %>
         </div>
-
-        <div class="card">
-          <h2 style="margin-top:0;">Mural de atividades</h2>
-
-          <% if (atividades.length === 0) { %>
-            <div class="empty-state">
-              <div class="empty-state-icon">Ψ</div>
-              <h3>Nada por aqui ainda</h3>
-              <p>Conclusões, novas tarefas e lembretes enviados vão aparecer aqui, como um grupo da equipe.</p>
-            </div>
-          <% } else { %>
-            <div class="mural-chat">
-              <% atividades.slice().reverse().forEach((a) => { %>
-                <%
-                  const pessoaMural = a.people;
-                  const nomeMural = pessoaMural ? pessoaMural.name : 'Sistema';
-                  const inicial = nomeMural.charAt(0).toUpperCase();
-                  const classePapel = a.papel === 'leader' ? 'lider' : 'membro';
-                %>
-                <div class="mural-msg">
-                  <% if (pessoaMural && pessoaMural.avatar_url) { %>
-                    <img class="mural-avatar" src="<%= pessoaMural.avatar_url %>" alt="">
-                  <% } else { %>
-                    <div class="mural-avatar"><%= inicial %></div>
-                  <% } %>
-                  <div class="mural-msg-body">
-                    <div class="mural-bubble <%= classePapel %>">
-                      <span class="mural-nome"><%= nomeMural %></span>
-                      <%= a.message %>
-                      <small><%= new Date(a.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></small>
-                    </div>
-                  </div>
-                </div>
-              <% }) %>
-            </div>
-          <% } %>
-        </div>
       </div>
     </div>
   </div>
 
   <script>
-    document.querySelectorAll('.form-excluir-tarefa').forEach((form) => {
+    document.querySelectorAll('.form-excluir-pessoa').forEach((form) => {
       form.addEventListener('submit', (e) => {
-        if (!confirm('Tem certeza que quer excluir essa tarefa? Essa ação não pode ser desfeita.')) {
+        if (!confirm('Excluir essa pessoa remove também o acesso dela ao sistema, os pedidos e as tarefas atribuídas a ela. Essa ação não pode ser desfeita. Continuar?')) {
           e.preventDefault();
         }
       });

@@ -188,11 +188,16 @@ async function listarPessoas(req, res) {
       .sort((a, b) => a.name.localeCompare(b.name));
 
     const papeis = await userModel.findRolesByPersonIds(pessoas.map((p) => p.id));
+    const vinculoPorPessoa = {};
+    membros.forEach((m) => {
+      if (m.users?.people) vinculoPorPessoa[m.users.people.id] = { id: m.id, role: m.role };
+    });
 
     res.render('people/lista', {
       title: 'Pessoas',
       pessoas,
       papeis,
+      vinculoPorPessoa,
       meusGts: req.meusGts,
       erro: null,
       sucesso: req.query.ok || null,
